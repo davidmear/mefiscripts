@@ -191,8 +191,8 @@ setup();
 
 //
 // Todo, for pagination:
-// Add buttons to display next/prev x comments
-// Handle first/last comments
-// Add display of where you are in the comments
-// Add jump to comment text box + button
+// Jump to the correct page for comment links
+// Handle new comments somehow
+// Add display of where you are in the comments?
+// Add a note to the comment form if you're not on the last page?
 // 
