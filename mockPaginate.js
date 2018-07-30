@@ -204,19 +204,6 @@ function createPageFunction(i) {
     return function() {changePage(i)};
 }
 
-function addPageButton(buttonName) {
-    var buttonDiv = document.createElement("DIV");
-    buttonDiv.className = "musicButton";
-    buttonP = document.createElement("P");
-    buttonText = document.createTextNode(fileName.slice(3, fileName.length - 4));
-    buttonP.appendChild(buttonText);
-    buttonDiv.appendChild(buttonP);
-    
-    buttonDiv.onclick = function(){playNewTrack("music", fileName)};
-        
-    contentElement.appendChild(buttonDiv);
-}
-
 
 //
 // Todo, for pagination:
