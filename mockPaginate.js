@@ -43,21 +43,6 @@ function setup() {
 
 window.addEventListener("load", setup, false); 
 
-function addEvent(node, type, listener) {
-    if (node.addEventListener) {
-        node.addEventListener(type, listener, false);
-        return true;
-    } else if (node.attachEvent) {
-        node['e' + type + listener] = listener;
-        node[type + listener] = function() {
-            node['e' + type + listener](window.event);
-        }
-        node.attachEvent('on' + type, node[type + listener]);
-        return true;
-    }
-    return false;
-};
-
 function hideAll() {
     var display;
     for (var i = 0; i < allComments.length; i++) {
