@@ -41,8 +41,6 @@ function setup() {
     updateControls();
 };
 
-window.addEventListener("load", setup, false); 
-
 function hideAll() {
     var display;
     for (var i = 0; i < allComments.length; i++) {
@@ -72,8 +70,8 @@ function setCommentVisibility(i, show) {
 }
 
 function refreshFlow() {
-    $(window).resize() // Forcing scroll refresh
-    //document.getElementsByName("commentpreview")[0].scrollIntoView(true); // Jump to the comment form
+    window.dispatchEvent(new Event('resize')); // Try to force reflow
+    //$(window).resize()
 }
 
 function changePage(newPage) {
@@ -189,6 +187,7 @@ function createPageFunction(i) {
     return function() {changePage(i)};
 }
 
+setup();
 
 //
 // Todo, for pagination:
