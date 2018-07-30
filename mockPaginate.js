@@ -8,6 +8,7 @@
 // ==/UserScript==
 
 var allComments;
+var commentAnchors;
 var commentsPerPage = 100;
 var currentPage = 0;
 var totalPages;
@@ -39,10 +40,16 @@ function setup() {
     hideAll();
     createControls();
     updateControls();
+    
+    if (window.location.hash) {
+        jumpToComment(window.location.hash.substring(1));
+    }
 };
 
 function hideAll() {
     var display;
+    
+    commentAnchors = []
     for (var i = 0; i < allComments.length; i++) {
     
         if (i >= currentPage * commentsPerPage && i < (currentPage + 1) * commentsPerPage) {
@@ -52,6 +59,10 @@ function hideAll() {
         }
         
         setCommentVisibility(i, display);
+        
+        if (allComments[i].previousSibling) {
+            commentAnchors[i] = allComments[i].previousSibling.name;
+        }
 
     };
     
@@ -101,6 +112,15 @@ function changePage(newPage) {
         
         // Jump to the top
         allComments[currentPage * commentsPerPage].previousSibling.scrollIntoView(true);
+    }
+}
+
+function jumpToComment(commentAnchor) {
+    for (var i = 0; i < allComments.length; i++) {
+        if (commentAnchors[i] == commentAnchor) {
+            changePage(Math.floor(i / commentsPerPage);
+            allComments[i].previousSibling.scrollIntoView(true);
+        }
     }
 }
 
