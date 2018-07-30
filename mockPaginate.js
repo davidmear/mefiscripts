@@ -1,9 +1,15 @@
-javascript:(function(){
-// Add faux pagination to a thread by hiding all but a section of the comments at a time.
+// ==UserScript==
+// @name            Mock Paginate
+// @description     Adds the appearance of pages to threads by only showing one section of comments at a time.
+// @namespace       github.com/davidmear/mefiscripts
+// @version         0.1
+// @include         https://metafilter.com/*
+// @include         https://*.metafilter.com/*
+// ==/UserScript==
 
 var allComments;
-var commentsPerPage = 10;
-var currentPage = 12;
+var commentsPerPage = 100;
+var currentPage = 0;
 var totalPages;
 var prevNextThreadBox;
 
@@ -210,8 +216,6 @@ function addPageButton(buttonName) {
         
     contentElement.appendChild(buttonDiv);
 }
-
-})();
 
 
 //
