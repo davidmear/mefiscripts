@@ -31,11 +31,3 @@ document.getElementsByName('commentpreview')[0].scrollIntoView(true); // Jump to
 // Minified version:
 
 javascript:(function(){for(var e=document.getElementsByClassName("comments"),n="none"==e[0].style.display?"":"none",t=0;t<e.length-13;t++)try{e[t].style.display=n,e[t].nextSibling.style.display=n,e[t].nextSibling.nextSibling.style.display=n}catch(e){console.log(e);continue}$(window).resize(),document.getElementsByName("commentpreview")[0].scrollIntoView(!0)}());
-
-//
-// Todo, for pagination:
-// Add buttons to display next/prev x comments
-// Handle first/last comments
-// Add display of where you are in the comments
-// Add jump to comment text box + button
-// 
