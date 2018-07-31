@@ -18,6 +18,7 @@ var commentsPerPage = 100;
 var currentPage = 0;
 var totalPages;
 var linkedCommentOnPage;
+var linkedComment;
 
 // References
 var allComments;
@@ -192,7 +193,7 @@ function changePage(newPage, changeHash) {
         allComments[currentPage * commentsPerPage].previousSibling.scrollIntoView(true);
         
         if (changeHash) {
-          updateHash("p" + (currentPage + 1));
+          updateHash();
         }
         
     }
@@ -208,13 +209,12 @@ function checkForLinkedComment() {
             triangleContainer.appendChild(triangle);
         }
     }
-    var commentAnchor = window.location.hash.substring(1);
     if (triangleContainer) {
         triangleContainer.style.display = "none";
     }
     linkedCommentOnPage = false;
     for (var i = currentPage * commentsPerPage; i < Math.min((currentPage + 1) * commentsPerPage, allComments.length); i++) {
-        if (commentAnchors[i] == commentAnchor) {
+        if (commentAnchors[i] == linkedComment) {
             linkedCommentOnPage = true;
         }
     }
@@ -226,23 +226,34 @@ function checkForLinkedComment() {
 function jumpToComment(commentAnchor) {
     for (var i = 0; i < allComments.length; i++) {
         if (commentAnchors[i] == commentAnchor) {
+            linkedComment = commentAnchors[i];
             changePage(Math.floor(i / commentsPerPage), false);
             allComments[i].previousSibling.scrollIntoView(true);
         }
     }
 }
 
-function updateHash(newHash) {
-    window.location.hash = newHash;
+function updateHash() {
+    if (linkedCommentOnPage) {
+        window.location.hash = linkedComment;
+    } else {
+        window.location.hash = "p" + (currentPage + 1);
+    }
 }
 
 function hashChanged() {
     console.log("Hash changed to " + window.location.hash);
     if (window.location.hash) {
         if (window.location.hash.substring(0, 2) == "#p") {
+            // Custom page hash
             console.log(" -> " + (parseInt(window.location.hash.substring(2)) - 1));
             changePage(parseInt(window.location.hash.substring(2)) - 1, true);
+        } else if (window.location.hash.substring(0, 7) == "#inline") {
+            // Metafilter link to the last newly added comment.
+            // Reset to the current page.
+            updateHash();
         } else {
+            // Check if it's a Metafilter comment link
             jumpToComment(window.location.hash.substring(1));
             checkForLinkedComment();
         }
@@ -365,7 +376,8 @@ setup();
 
 //
 // Todo:
-// Test new comment handling.
+// Stop scrolling to linked comment when changing pages manually?
+// Add an animation or highlight when new comments disappear off onto the last page / a new page.
 // Add handling for large numbers of pages (eg. if user changes comment count to 10). Show a few at a time + first/last? Only kick in >30?
 // Test logged out view.
 // Test classic view.
