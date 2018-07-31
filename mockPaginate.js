@@ -2,7 +2,7 @@
 // @name            Mock Paginate
 // @description     Adds the appearance of pages to threads by only showing one section of comments at a time.
 // @namespace       github.com/davidmear/mefiscripts
-// @version         0.2
+// @version         0.3
 // @include         https://metafilter.com/*
 // @include         https://*.metafilter.com/*
 // ==/UserScript==
@@ -53,7 +53,7 @@ function setup() {
     newCommentsObserver = new MutationObserver(newCommentsChange);
     newCommentsObserver.observe(newCommentsMessage, {attributes:true});
     
-    if (allComments[allComments.length - 4].id == "newcommentsmsg") {
+    if (allComments.length > 3 && allComments[allComments.length - 4].id == "newcommentsmsg") {
         allComments.splice(allComments.length - 4, 4);
     } else {
         allComments.splice(allComments.length - 3, 3);
@@ -101,6 +101,10 @@ var newCommentsChange = function(changes) {
                 createNewPageControls();
                 updateControls();
                 updatepostCommentCount();
+                
+                if (allComments.length > previousComments && currentPage < totalPages - 1) {
+                    bounceElement(pageLinks[totalPages - 1]);
+                }
             }
         }
     }
@@ -289,7 +293,7 @@ function updatepostCommentCount() {
 function updateControls() {
     if (indexSpan.contains(pageLinks[currentPage])) {
         indexSpan.insertBefore(pageGrey, pageLinks[currentPage]);
-        pageGrey.nodeValue = "[" + (currentPage + 1) + "]";
+        pageGrey.innerHTML = "[" + (currentPage + 1) + "]";
         pageLinks[currentPage].remove(true);
     }
     
@@ -306,7 +310,7 @@ function updateControls() {
             prevGreyed = false;
         }
     }
-    if (currentPage == totalPages - 1) {
+    if (currentPage == totalPages - 1 || totalPages == 0) {
         if (!nextGreyed) {
             indexSpan.insertBefore(nextGrey, nextLink);
             nextLink.remove(true);
@@ -353,7 +357,8 @@ function createControls() {
     for (var i = 0; i < totalPages; i++) {
         createPageButton(i);
     }
-    pageGrey = document.createTextNode("[1]");
+    pageGrey = document.createElement("span");
+    pageGrey.innerHTML = "[1]";
     
     indexSpan.appendChild(nextLink);
     
@@ -387,6 +392,28 @@ function createPageFunction(i) {
     return function() {changePage(i, true)};
 }
 
+function bounceElement(element) {
+    var y = 0;
+    var yv = -0.6;
+    var step = 0;
+    var i = setInterval(frame, 5);
+    function frame() {
+        if (step >= 400) {
+            clearInterval(i);
+            element.style.top = 0;
+        } else {
+            step++;
+            y += yv;
+            yv = yv + 0.015;
+            if (y > 0) {
+                y = -y;
+                yv = -yv * 0.6;
+            }
+            element.style.top = y + 'px';
+        }
+    }
+}
+
 function browserAdjustments() {
     // For IE - Need to actually test.
     /*
@@ -402,7 +429,7 @@ setup();
 
 //
 // Todo:
-// Handle #inline- hashes.
+// Handle #inline- hashes
 // Stop scrolling to linked comment when changing pages manually?
 // Add an animation or highlight when new comments disappear off onto the last page / a new page.
 // Add handling for large numbers of pages (eg. if user changes comment count to 10). Show a few at a time + first/last? Only kick in >30?
