@@ -7,11 +7,20 @@
 // @include         https://*.metafilter.com/*
 // ==/UserScript==
 
-var allComments;
-var commentAnchors;
+// Options
+//
 var commentsPerPage = 100;
+//
+//
+
+
+// Status
 var currentPage = 0;
 var totalPages;
+
+// References
+var allComments;
+var commentAnchors;
 var prevNextThreadBox;
 var newCommentsMessage;
 var newCommentsObserver;
