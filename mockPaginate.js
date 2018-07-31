@@ -2,7 +2,7 @@
 // @name            Mock Paginate
 // @description     Adds the appearance of pages to threads by only showing one section of comments at a time.
 // @namespace       github.com/davidmear/mefiscripts
-// @version         0.1
+// @version         0.2
 // @include         https://metafilter.com/*
 // @include         https://*.metafilter.com/*
 // ==/UserScript==
@@ -17,6 +17,7 @@ var commentsPerPage = 100;
 // Status
 var currentPage = 0;
 var totalPages;
+var linkedCommentOnPage;
 
 // References
 var allComments;
@@ -24,6 +25,7 @@ var commentAnchors;
 var prevNextThreadBox;
 var newCommentsMessage;
 var newCommentsObserver;
+var triangleContainer;
 
 // Controls
 var indexDiv;
@@ -62,6 +64,7 @@ function setup() {
     if (window.location.hash) {
         jumpToComment(window.location.hash.substring(1));
     }
+    window.addEventListener("hashchange", hashChanged, false);
 };
 
 var newCommentsChange = function(changes) {
@@ -142,9 +145,9 @@ function prepareNewComments(previousComments) {
 function setCommentVisibility(i, show) {
     try {
         // Toggle the comment visibility
-        allComments[i].style.display=show; // Comment
-        allComments[i].nextSibling.style.display=show; // First <br /> after comment
-        allComments[i].nextSibling.nextSibling.style.display=show; // Second <br /> after comment
+        allComments[i].style.display = show; // Comment
+        allComments[i].nextSibling.style.display = show; // First <br /> after comment
+        allComments[i].nextSibling.nextSibling.style.display = show; // Second <br /> after comment
     } catch (e) {
         console.log("Setting comment " + i + " - " + e);
     }
@@ -165,7 +168,7 @@ function changePage(newPage) {
         
         // Hide current page
         for (i = currentPage * commentsPerPage; i < Math.min((currentPage + 1) * commentsPerPage, allComments.length); i++) {
-            setCommentVisibility(i, 'none');
+            setCommentVisibility(i, "none");
         }
         
         // Change page
@@ -173,15 +176,42 @@ function changePage(newPage) {
         
         // Show new page
         for (i = currentPage * commentsPerPage; i < Math.min((currentPage + 1) * commentsPerPage, allComments.length); i++) {
-            setCommentVisibility(i, '');
+            setCommentVisibility(i, "");
         }
-        
+                
         updateControls();
+        
+        checkForLinkedComment();
         
         refreshFlow();
         
         // Jump to the top
         allComments[currentPage * commentsPerPage].previousSibling.scrollIntoView(true);
+    }
+}
+
+function checkForLinkedComment() {
+    if (!triangleContainer) {
+        var triangle = document.getElementById("triangle");
+        if (triangle) {
+            triangleContainer = document.createElement("div");
+            triangleContainer.style.cssText = "display:inline-block; position:absolute; left:0; top:0;";
+            triangle.parentNode.insertBefore(triangleContainer, triangle);
+            triangleContainer.appendChild(triangle);
+        }
+    }
+    var commentAnchor = window.location.hash.substring(1);
+    if (triangleContainer) {
+        triangleContainer.style.display = "none";
+    }
+    linkedCommentOnPage = false;
+    for (var i = currentPage * commentsPerPage; i < Math.min((currentPage + 1) * commentsPerPage, allComments.length); i++) {
+        if (commentAnchors[i] == commentAnchor) {
+            linkedCommentOnPage = true;
+        }
+    }
+    if (triangleContainer && linkedCommentOnPage) {
+        triangleContainer.style.display = "inline-block";
     }
 }
 
@@ -194,11 +224,17 @@ function jumpToComment(commentAnchor) {
     }
 }
 
+function hashChanged() {
+    if (window.location.hash) {
+        jumpToComment(window.location.hash.substring(1));
+        checkForLinkedComment();
+    }
+}
+
 function updateControls() {
     if (indexSpan.contains(pageLinks[currentPage])) {
-        console.log("Adding greyed page.");
         indexSpan.insertBefore(pageGrey, pageLinks[currentPage]);
-        pageGrey.nodeValue = currentPage + 1;
+        pageGrey.nodeValue = "[" + (currentPage + 1) + "]";
         pageLinks[currentPage].remove(true);
     }
     
@@ -262,13 +298,12 @@ function createControls() {
     for (var i = 0; i < totalPages; i++) {
         createPageButton(i);
     }
-    pageGrey = document.createTextNode("1");
+    pageGrey = document.createTextNode("[1]");
     
     indexSpan.appendChild(nextLink);
     
     indexDiv.appendChild(indexSpan);
     
-    console.log("Adding controls");
     prevNextThreadBox.parentNode.insertBefore(indexDiv, prevNextThreadBox);
 }
 
@@ -301,10 +336,6 @@ setup();
 
 //
 // Todo:
-// Bold the greyed page somehow. 21, [22], 23, 24?
-// Fix changing pages with a comment linked messing with reflow - hide linked comment arrow?
-// Jump to the correct page when comment links are clicked
-// Refreshing when there's a comment link in the hash but you've changed pages - should it stay on the same page or jump back to the linked comment?
 // Test new comment handling.
 // Add handling for large numbers of pages (eg. if user changes comment count to 10). Show a few at a time + first/last? Only kick in >30?
 // Test logged out view.
