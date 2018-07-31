@@ -27,6 +27,7 @@ var prevNextThreadBox;
 var newCommentsMessage;
 var newCommentsObserver;
 var triangleContainer;
+var postCommentCount;
 
 // Controls
 var indexDiv;
@@ -46,6 +47,7 @@ function setup() {
     
     allComments = [].slice.call(document.getElementsByClassName("comments")); // Gets a list of all the comment divs
     prevNextThreadBox = allComments[allComments.length - 3];
+    findPostCommentCount();
     
     newCommentsMessage = document.getElementById("newcommentsmsg");
     newCommentsObserver = new MutationObserver(newCommentsChange);
@@ -98,6 +100,7 @@ var newCommentsChange = function(changes) {
                 
                 createNewPageControls();
                 updateControls();
+                updatepostCommentCount();
             }
         }
     }
@@ -250,6 +253,7 @@ function hashChanged() {
             changePage(parseInt(window.location.hash.substring(2)) - 1, true);
         } else if (window.location.hash.substring(0, 7) == "#inline") {
             // Metafilter link to the last newly added comment.
+            // !!! Doesn't fire a hash changed event because it uses history.replaceState();
             // Reset to the current page.
             updateHash();
         } else {
@@ -257,6 +261,28 @@ function hashChanged() {
             jumpToComment(window.location.hash.substring(1));
             checkForLinkedComment();
         }
+    }
+}
+
+function findPostCommentCount() {
+    try {
+        var byline = document.getElementsByClassName("smallcopy postbyline")[0];
+        for (var i = 0; i < byline.childNodes.length; i++) {
+            if (byline.childNodes[i].nodeValue) {
+                if (byline.childNodes[i].nodeValue.indexOf("total)") >= 0) {
+                    postCommentCount = byline.childNodes[i];
+                    return;
+                }
+            }
+        }
+    } catch (e) {
+        console.log("Failed to find post comment count. " + e);
+    }
+}
+
+function updatepostCommentCount() {
+    if (postCommentCount) {
+        postCommentCount.nodeValue = postCommentCount.nodeValue.replace(/\d+/, allComments.length);
     }
 }
 
@@ -376,6 +402,7 @@ setup();
 
 //
 // Todo:
+// Handle #inline- hashes.
 // Stop scrolling to linked comment when changing pages manually?
 // Add an animation or highlight when new comments disappear off onto the last page / a new page.
 // Add handling for large numbers of pages (eg. if user changes comment count to 10). Show a few at a time + first/last? Only kick in >30?
