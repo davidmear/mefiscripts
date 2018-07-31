@@ -13,8 +13,11 @@ var commentsPerPage = 100;
 var currentPage = 0;
 var totalPages;
 var prevNextThreadBox;
+var newCommentsMessage;
+var newCommentsObserver;
 
 // Controls
+var indexDiv;
 var indexSpan;
 var prevLink;
 var nextLink;
@@ -29,6 +32,10 @@ function setup() {
     allComments = [].slice.call(document.getElementsByClassName("comments")); // Gets a list of all the comment divs
     totalPages = Math.ceil(allComments.length / commentsPerPage);
     prevNextThreadBox = allComments[allComments.length - 3];
+    
+    newCommentsMessage = document.getElementById("newcommentsmsg");
+    newCommentsObserver = new MutationObserver(newCommentsChange);
+    newCommentsObserver.observe(newCommentsMessage, {attributes:true});
     
     if (allComments[allComments.length - 4].id == "newcommentsmsg") {
         allComments.splice(allComments.length - 4, 4);
@@ -46,10 +53,43 @@ function setup() {
     }
 };
 
+var newCommentsChange = function(changes) {
+    for(var change of changes) {
+        if (change.type == 'attributes') {
+            //console.log('The ' + change.attributeName + ' attribute was modified.');
+            if (change.attributeName == "style") {
+            
+                // The new comments message div has its visibility changed when: 1) New comments appear and 2) The user clicks show comments, so:
+                // Refresh everything, get all the comments, redo the pages, refresh the controls, scroll back to the correct position?
+                // Need to test on the last page and on earlier pages.
+                
+                allComments = [].slice.call(document.getElementsByClassName("comments"));
+                totalPages = Math.ceil(allComments.length / commentsPerPage);
+                if (allComments[allComments.length - 4].id == "newcommentsmsg") {
+                    allComments.splice(allComments.length - 4, 4);
+                } else {
+                    allComments.splice(allComments.length - 3, 3);
+                }
+                hideAll();
+                
+                // Need to do a full recheck of controls here, add a page to the index list if necessary,
+                //recheck the greyed next / prev buttons, recheck the greyed page buttons.
+                // Testing to see if a dumb hard reset works:
+                indexDiv.remove(true);
+                createControls();
+                updateControls();
+                
+                // Half working, but getting an error:
+                // Setting comment 232 - TypeError: Cannot set property 'display' of undefined
+            }
+        }
+    }
+}
+
 function hideAll() {
     var display;
     
-    commentAnchors = []
+    commentAnchors = [];
     for (var i = 0; i < allComments.length; i++) {
     
         if (i >= currentPage * commentsPerPage && i < (currentPage + 1) * commentsPerPage) {
@@ -106,9 +146,9 @@ function changePage(newPage) {
             setCommentVisibility(i, '');
         }
         
-        refreshFlow();
-        
         updateControls();
+        
+        refreshFlow();
         
         // Jump to the top
         allComments[currentPage * commentsPerPage].previousSibling.scrollIntoView(true);
@@ -118,7 +158,7 @@ function changePage(newPage) {
 function jumpToComment(commentAnchor) {
     for (var i = 0; i < allComments.length; i++) {
         if (commentAnchors[i] == commentAnchor) {
-            changePage(Math.floor(i / commentsPerPage);
+            changePage(Math.floor(i / commentsPerPage));
             allComments[i].previousSibling.scrollIntoView(true);
         }
     }
@@ -159,7 +199,7 @@ function updateControls() {
 
 function createControls() {
     
-    var indexDiv = document.createElement("div");
+    indexDiv = document.createElement("div");
     indexDiv.className = "comments";
     indexSpan = document.createElement("span");
     indexSpan.className = "whitesmallcopy";
@@ -211,8 +251,11 @@ setup();
 
 //
 // Todo, for pagination:
-// Jump to the correct page for comment links
-// Handle new comments somehow
+// Fix changing pages with a comment linked messing with reflow - hide linked comment arrow?
+// Is the new comments div always present?
+// Jump to the correct page when comment links are clicked
+// Refreshing when there's a comment link in the hash but you've changed pages - should it stay on the same page or jump back to the linked comment?
+// Handle new comments somehow - are there events to hook into when it appears / is clicked? -> refresh comments and redo page count
 // Add display of where you are in the comments?
 // Add a note to the comment form if you're not on the last page?
 // 
