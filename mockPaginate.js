@@ -41,6 +41,8 @@ var pageLinksEnd;
 var pageGrey;
 
 function setup() {
+    browserAdjustments();
+    
     allComments = [].slice.call(document.getElementsByClassName("comments")); // Gets a list of all the comment divs
     prevNextThreadBox = allComments[allComments.length - 3];
     
@@ -62,9 +64,10 @@ function setup() {
     updateControls();
     
     if (window.location.hash) {
-        jumpToComment(window.location.hash.substring(1));
+        hashChanged();
     }
     window.addEventListener("hashchange", hashChanged, false);
+    
 };
 
 var newCommentsChange = function(changes) {
@@ -158,9 +161,9 @@ function refreshFlow() {
     //$(window).resize()
 }
 
-function changePage(newPage) {
+function changePage(newPage, changeHash) {
     if (newPage >= 0 && newPage < totalPages && newPage != currentPage) {
-    
+                
         indexSpan.insertBefore(pageLinks[currentPage], pageGrey);
         pageGrey.remove(true);
         
@@ -187,6 +190,11 @@ function changePage(newPage) {
         
         // Jump to the top
         allComments[currentPage * commentsPerPage].previousSibling.scrollIntoView(true);
+        
+        if (changeHash) {
+          updateHash("p" + (currentPage + 1));
+        }
+        
     }
 }
 
@@ -218,16 +226,26 @@ function checkForLinkedComment() {
 function jumpToComment(commentAnchor) {
     for (var i = 0; i < allComments.length; i++) {
         if (commentAnchors[i] == commentAnchor) {
-            changePage(Math.floor(i / commentsPerPage));
+            changePage(Math.floor(i / commentsPerPage), false);
             allComments[i].previousSibling.scrollIntoView(true);
         }
     }
 }
 
+function updateHash(newHash) {
+    window.location.hash = newHash;
+}
+
 function hashChanged() {
+    console.log("Hash changed to " + window.location.hash);
     if (window.location.hash) {
-        jumpToComment(window.location.hash.substring(1));
-        checkForLinkedComment();
+        if (window.location.hash.substring(0, 2) == "#p") {
+            console.log(" -> " + (parseInt(window.location.hash.substring(2)) - 1));
+            changePage(parseInt(window.location.hash.substring(2)) - 1, true);
+        } else {
+            jumpToComment(window.location.hash.substring(1));
+            checkForLinkedComment();
+        }
     }
 }
 
@@ -276,7 +294,7 @@ function createControls() {
 
     prevLink = document.createElement("a");
     prevLink.appendChild(document.createTextNode("« Prev"));
-    prevLink.onclick = function(){changePage(currentPage - 1)};
+    prevLink.onclick = function(){changePage(currentPage - 1, true)};
     prevLink.style.cursor = "pointer";
     prevGrey = document.createTextNode("« Prev");
     
@@ -285,7 +303,7 @@ function createControls() {
     
     nextLink = document.createElement("a");
     nextLink.appendChild(document.createTextNode("Next »"));
-    nextLink.onclick = function(){changePage(currentPage + 1)};
+    nextLink.onclick = function(){changePage(currentPage + 1, true)};
     nextLink.style.cursor = "pointer";
     nextGrey = document.createTextNode("Next »");
     
@@ -329,7 +347,18 @@ function createPageButton(i) {
 }
 
 function createPageFunction(i) {
-    return function() {changePage(i)};
+    return function() {changePage(i, true)};
+}
+
+function browserAdjustments() {
+    // For IE - Need to actually test.
+    /*
+    if (!('remove' in Element.prototype)) {
+    Element.prototype.remove = function() {
+        if (this.parentNode) {
+            this.parentNode.removeChild(this);
+        }
+    };*/
 }
 
 setup();
