@@ -2,15 +2,21 @@
 // @name            Mock Paginate
 // @description     Adds the appearance of pages to threads by only showing one section of comments at a time.
 // @namespace       github.com/davidmear/mefiscripts
-// @version         0.3
+// @version         0.4
 // @include         https://metafilter.com/*
 // @include         https://*.metafilter.com/*
 // ==/UserScript==
 
-// Options
+//  Options
 //
-var commentsPerPage = 100;
+//  How many comments should each page display.
+    var commentsPerPage = 100;
 //
+//  How many pages should be listed before switching to a condensed page list.
+    var maxListedPages = 10;
+//
+//  How many next and previous pages to display in a condensed list.
+    var condensedPad = 2;
 //
 
 
@@ -40,10 +46,16 @@ var prevGreyed = false;
 var nextGreyed = false;
 var pageLinks = [];
 var pageLinksEnd;
+var pageCommas = [];
 var pageGrey;
+var pageEllipses = [];
 
 function setup() {
     browserAdjustments();
+    
+    maxListedPages = Math.max(3, parseInt(maxListedPages) || 20);
+    commentsPerPage = Math.max(1, parseInt(commentsPerPage) || 100);
+    condensedPad = parseInt(condensedPad) || 0;
     
     allComments = [].slice.call(document.getElementsByClassName("comments")); // Gets a list of all the comment divs
     prevNextThreadBox = allComments[allComments.length - 3];
@@ -76,7 +88,6 @@ function setup() {
 var newCommentsChange = function(changes) {
     for(var change of changes) {
         if (change.type == 'attributes') {
-            //console.log('The ' + change.attributeName + ' attribute was modified.');
             if (change.attributeName == "style") {
             
                 // The new comments message div has its visibility changed when: 1) New comments appear and 2) The user clicks show comments, so:
@@ -105,6 +116,8 @@ var newCommentsChange = function(changes) {
                 if (allComments.length > previousComments && currentPage < totalPages - 1) {
                     bounceElement(pageLinks[totalPages - 1]);
                 }
+                
+                return;
             }
         }
     }
@@ -249,11 +262,9 @@ function updateHash() {
 }
 
 function hashChanged() {
-    console.log("Hash changed to " + window.location.hash);
     if (window.location.hash) {
         if (window.location.hash.substring(0, 2) == "#p") {
             // Custom page hash
-            console.log(" -> " + (parseInt(window.location.hash.substring(2)) - 1));
             changePage(parseInt(window.location.hash.substring(2)) - 1, true);
         } else if (window.location.hash.substring(0, 7) == "#inline") {
             // Metafilter link to the last newly added comment.
@@ -293,8 +304,34 @@ function updatepostCommentCount() {
 function updateControls() {
     if (indexSpan.contains(pageLinks[currentPage])) {
         indexSpan.insertBefore(pageGrey, pageLinks[currentPage]);
-        pageGrey.innerHTML = "[" + (currentPage + 1) + "]";
+        pageGrey.innerHTML = "<b>[" + (currentPage + 1) + "]</b>";
         pageLinks[currentPage].remove(true);
+    }
+    
+    if (totalPages > maxListedPages) {
+        indexSpan.insertBefore(pageEllipses[0], pageCommas[0].nextSibling);
+        if (currentPage == totalPages - 1) {
+            indexSpan.insertBefore(pageEllipses[1], pageGrey);
+        } else {
+            indexSpan.insertBefore(pageEllipses[1], pageLinks[totalPages - 1]);
+        }
+        var lowPage = Math.min(currentPage - condensedPad, totalPages - 1 - condensedPad * 2);
+        var highPage = Math.max(currentPage + condensedPad, condensedPad * 2);
+        for (var i = 1; i < totalPages - 1; i++) {
+            if (i >= lowPage && i <= highPage) {
+                pageLinks[i].style.display = "";
+                pageCommas[i].style.display = "";
+            } else {
+                pageLinks[i].style.display = "none";
+                pageCommas[i].style.display = "none";
+            }
+        }
+        if (currentPage + condensedPad + 1 >= totalPages - 1) {
+            pageEllipses[1].remove(true);
+        }
+        if (currentPage - condensedPad - 1 <= 0) {
+            pageEllipses[0].remove(true);
+        }
     }
     
     if (currentPage == 0) {
@@ -358,7 +395,11 @@ function createControls() {
         createPageButton(i);
     }
     pageGrey = document.createElement("span");
-    pageGrey.innerHTML = "[1]";
+    pageGrey.innerHTML = "<b>[1]</b>";
+    
+    pageEllipses = [];
+    pageEllipses[0] = document.createTextNode(" ... ");
+    pageEllipses[1] = document.createTextNode(" ... ");
     
     indexSpan.appendChild(nextLink);
     
@@ -370,7 +411,9 @@ function createControls() {
 function createNewPageControls() {
     var i = pageLinks.length;
     if (pageLinks.length < totalPages) {
-        indexSpan.insertBefore(document.createTextNode(", "), pageLinksEnd);
+        pageCommas[i] = document.createElement("span");
+        pageCommas[i].innerHTML = ", ";
+        indexSpan.insertBefore(pageCommas[i], pageLinksEnd);
     }
     while (pageLinks.length < totalPages) {
         createPageButton(i);
@@ -384,7 +427,9 @@ function createPageButton(i) {
     pageLinks[i].style.cursor = "pointer";
     indexSpan.insertBefore(pageLinks[i], pageLinksEnd);
     if (i < totalPages - 1) {
-        indexSpan.insertBefore(document.createTextNode(", "), pageLinksEnd);
+        pageCommas[i] = document.createElement("span");
+        pageCommas[i].innerHTML = ", ";
+        indexSpan.insertBefore(pageCommas[i], pageLinksEnd);
     }
 }
 
@@ -431,12 +476,12 @@ setup();
 // Todo:
 // Handle #inline- hashes
 // Stop scrolling to linked comment when changing pages manually?
-// Add an animation or highlight when new comments disappear off onto the last page / a new page.
-// Add handling for large numbers of pages (eg. if user changes comment count to 10). Show a few at a time + first/last? Only kick in >30?
 // Test logged out view.
 // Test classic view.
 // Test other subsites.
 // Add display of where you are in the comments?
+// Add keyboard controls?
+// Add a way to jump to a page?
 // Add a note to the comment form if you're not on the last page?
 // 
 // Questions
