@@ -471,19 +471,3 @@ function browserAdjustments() {
 }
 
 setup();
-
-//
-// Todo:
-// Handle #inline- hashes
-// Stop scrolling to linked comment when changing pages manually?
-// Test logged out view.
-// Test classic view.
-// Test other subsites.
-// Add display of where you are in the comments?
-// Add keyboard controls?
-// Add a way to jump to a page?
-// Add a note to the comment form if you're not on the last page?
-// 
-// Questions
-// Is the new comments div always present?
-// Does anything else show up with the class "comments"?
