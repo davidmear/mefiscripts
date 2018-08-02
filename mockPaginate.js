@@ -326,10 +326,10 @@ function updateControls() {
                 pageCommas[i].style.display = "none";
             }
         }
-        if (currentPage + condensedPad + 1 >= totalPages - 1) {
+        if (highPage + 1 >= totalPages - 1) {
             pageEllipses[1].remove(true);
         }
-        if (currentPage - condensedPad - 1 <= 0) {
+        if (lowPage - 1 <= 0) {
             pageEllipses[0].remove(true);
         }
     }
@@ -411,9 +411,9 @@ function createControls() {
 function createNewPageControls() {
     var i = pageLinks.length;
     if (pageLinks.length < totalPages) {
-        pageCommas[i] = document.createElement("span");
-        pageCommas[i].innerHTML = ", ";
-        indexSpan.insertBefore(pageCommas[i], pageLinksEnd);
+        pageCommas[i - 1] = document.createElement("span");
+        pageCommas[i - 1].innerHTML = ", ";
+        indexSpan.insertBefore(pageCommas[i - 1], pageLinksEnd);
     }
     while (pageLinks.length < totalPages) {
         createPageButton(i);
