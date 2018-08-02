@@ -53,8 +53,8 @@ var pageEllipses = [];
 function setup() {
     browserAdjustments();
     
-    maxListedPages = Math.max(3, parseInt(maxListedPages) || 20);
-    commentsPerPage = Math.max(1, parseInt(commentsPerPage) || 100);
+    maxListedPages = parseInt(maxListedPages) <= 0? 1 : Math.max(1, parseInt(maxListedPages) || 10);
+    commentsPerPage = parseInt(commentsPerPage) <= 0? 1 : Math.max(1, parseInt(commentsPerPage) || 100);
     condensedPad = parseInt(condensedPad) || 0;
     
     allComments = [].slice.call(document.getElementsByClassName("comments")); // Gets a list of all the comment divs
@@ -111,7 +111,7 @@ var newCommentsChange = function(changes) {
                 
                 createNewPageControls();
                 updateControls();
-                updatepostCommentCount();
+                updatePostCommentCount();
                 
                 if (allComments.length > previousComments && currentPage < totalPages - 1) {
                     bounceElement(pageLinks[totalPages - 1]);
@@ -295,7 +295,7 @@ function findPostCommentCount() {
     }
 }
 
-function updatepostCommentCount() {
+function updatePostCommentCount() {
     if (postCommentCount) {
         postCommentCount.nodeValue = postCommentCount.nodeValue.replace(/\d+/, allComments.length);
     }
@@ -315,8 +315,13 @@ function updateControls() {
         } else {
             indexSpan.insertBefore(pageEllipses[1], pageLinks[totalPages - 1]);
         }
-        var lowPage = Math.min(currentPage - condensedPad, totalPages - 1 - condensedPad * 2);
-        var highPage = Math.max(currentPage + condensedPad, condensedPad * 2);
+        
+        // Reduce padding to enforce maxListedPages
+        
+        var adjustedPad = Math.max(0, parseInt((maxListedPages - 3) / 2));
+        
+        var lowPage = Math.min(currentPage - adjustedPad, totalPages - 1 - adjustedPad * 2);
+        var highPage = Math.max(currentPage + adjustedPad, adjustedPad * 2);
         for (var i = 1; i < totalPages - 1; i++) {
             if (i >= lowPage && i <= highPage) {
                 pageLinks[i].style.display = "";
@@ -326,6 +331,7 @@ function updateControls() {
                 pageCommas[i].style.display = "none";
             }
         }
+        
         if (highPage + 1 >= totalPages - 1) {
             pageEllipses[1].remove(true);
         }
