@@ -53,8 +53,8 @@ var pageEllipses = [];
 function setup() {
     browserAdjustments();
     
-    maxListedPages = parseInt(maxListedPages) <= 0? 1 : Math.max(1, parseInt(maxListedPages) || 10);
-    commentsPerPage = parseInt(commentsPerPage) <= 0? 1 : Math.max(1, parseInt(commentsPerPage) || 100);
+    maxListedPages = parseInt(maxListedPages) <= 0? 1 : parseInt(maxListedPages) || 10;
+    commentsPerPage = parseInt(commentsPerPage) <= 0? 1 : parseInt(commentsPerPage) || 100;
     condensedPad = parseInt(condensedPad) || 0;
     
     allComments = [].slice.call(document.getElementsByClassName("comments")); // Gets a list of all the comment divs
