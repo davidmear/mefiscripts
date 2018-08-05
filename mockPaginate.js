@@ -2,7 +2,7 @@
 // @name            Mock Paginate
 // @description     Adds the appearance of pages to threads by only showing one section of comments at a time.
 // @namespace       github.com/davidmear/mefiscripts
-// @version         0.4
+// @version         0.5
 // @include         https://metafilter.com/*
 // @include         https://*.metafilter.com/*
 // ==/UserScript==
@@ -18,7 +18,21 @@
 //  How many next and previous pages to display in a condensed list.
     var condensedPad = 2;
 //
-
+//  If new comments are loaded on a later page, bounce the last page in the list.
+    var bounceOnLoad = true;
+//
+//  Text elements and styling.
+    var ui = {
+        prevButton: "« Prev",
+        nextButton: "Next »",
+        separator:  "  |  ",
+        ellipses:   " ... ",
+        currentL:   "<b>[",
+        currentR:   "]</b>",
+        pageL:       "",
+        pageR:      "",
+        comma:      ", ",
+    }
 
 // Status
 var currentPage = 0;
@@ -114,7 +128,9 @@ var newCommentsChange = function(changes) {
                 updatePostCommentCount();
                 
                 if (allComments.length > previousComments && currentPage < totalPages - 1) {
-                    bounceElement(pageLinks[totalPages - 1]);
+                    if (bounceOnLoad) {
+                        bounceElement(pageLinks[totalPages - 1]);
+                    }
                 }
                 
                 return;
@@ -179,7 +195,6 @@ function setCommentVisibility(i, show) {
 
 function refreshFlow() {
     window.dispatchEvent(new Event('resize')); // Try to force reflow
-    //$(window).resize()
 }
 
 function changePage(newPage, changeHash) {
@@ -304,7 +319,7 @@ function updatePostCommentCount() {
 function updateControls() {
     if (indexSpan.contains(pageLinks[currentPage])) {
         indexSpan.insertBefore(pageGrey, pageLinks[currentPage]);
-        pageGrey.innerHTML = "<b>[" + (currentPage + 1) + "]</b>";
+        pageGrey.innerHTML = ui.currentL + (currentPage + 1) + ui.currentR;
         pageLinks[currentPage].remove(true);
     }
     
@@ -377,35 +392,35 @@ function createControls() {
     indexSpan.style.fontSize = "11px";
 
     prevLink = document.createElement("a");
-    prevLink.appendChild(document.createTextNode("« Prev"));
+    prevLink.appendChild(document.createTextNode(ui.prevButton));
     prevLink.onclick = function(){changePage(currentPage - 1, true)};
     prevLink.style.cursor = "pointer";
-    prevGrey = document.createTextNode("« Prev");
+    prevGrey = document.createTextNode(ui.prevButton);
     
     indexSpan.appendChild(prevLink);
     indexDiv.appendChild(indexSpan);
     
     nextLink = document.createElement("a");
-    nextLink.appendChild(document.createTextNode("Next »"));
+    nextLink.appendChild(document.createTextNode(ui.nextButton));
     nextLink.onclick = function(){changePage(currentPage + 1, true)};
     nextLink.style.cursor = "pointer";
-    nextGrey = document.createTextNode("Next »");
+    nextGrey = document.createTextNode(ui.nextButton);
     
     indexSpan.appendChild(prevLink);
-    indexSpan.appendChild(document.createTextNode("  |  "));
+    indexSpan.appendChild(document.createTextNode(ui.separator));
     
-    pageLinksEnd = document.createTextNode("  |  ");
+    pageLinksEnd = document.createTextNode(ui.separator);
     indexSpan.appendChild(pageLinksEnd);
     
     for (var i = 0; i < totalPages; i++) {
         createPageButton(i);
     }
     pageGrey = document.createElement("span");
-    pageGrey.innerHTML = "<b>[1]</b>";
+    pageGrey.innerHTML = ui.currentL + "1" + ui.currentRight;
     
     pageEllipses = [];
-    pageEllipses[0] = document.createTextNode(" ... ");
-    pageEllipses[1] = document.createTextNode(" ... ");
+    pageEllipses[0] = document.createTextNode(ui.ellipses);
+    pageEllipses[1] = document.createTextNode(ui.ellipses);
     
     indexSpan.appendChild(nextLink);
     
@@ -418,7 +433,7 @@ function createNewPageControls() {
     var i = pageLinks.length;
     if (pageLinks.length < totalPages) {
         pageCommas[i - 1] = document.createElement("span");
-        pageCommas[i - 1].innerHTML = ", ";
+        pageCommas[i - 1].innerHTML = ui.comma;
         indexSpan.insertBefore(pageCommas[i - 1], pageLinksEnd);
     }
     while (pageLinks.length < totalPages) {
@@ -428,13 +443,13 @@ function createNewPageControls() {
 
 function createPageButton(i) {
     pageLinks[i] = document.createElement("a");
-    pageLinks[i].appendChild(document.createTextNode(i + 1));
+    pageLinks[i].appendChild(document.createTextNode(ui.pageL + (i + 1) + ui.pageR));
     pageLinks[i].onclick = createPageFunction(i);
     pageLinks[i].style.cursor = "pointer";
     indexSpan.insertBefore(pageLinks[i], pageLinksEnd);
     if (i < totalPages - 1) {
         pageCommas[i] = document.createElement("span");
-        pageCommas[i].innerHTML = ", ";
+        pageCommas[i].innerHTML = ui.comma;
         indexSpan.insertBefore(pageCommas[i], pageLinksEnd);
     }
 }
