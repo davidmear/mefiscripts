@@ -7,6 +7,8 @@
 // @include         https://*.metafilter.com/*
 // ==/UserScript==
 
+
+
 //  Options
 //
 //  How many comments should each page display.
@@ -33,6 +35,8 @@
         pageR:      "",
         comma:      ", ",
     }
+
+
 
 // Status
 var currentPage = 0;
@@ -392,24 +396,24 @@ function createControls() {
     indexSpan.style.fontSize = "11px";
 
     prevLink = document.createElement("a");
-    prevLink.appendChild(document.createTextNode(ui.prevButton));
+    prevLink.appendChild(newInnerSpan(ui.prevButton));
     prevLink.onclick = function(){changePage(currentPage - 1, true)};
     prevLink.style.cursor = "pointer";
-    prevGrey = document.createTextNode(ui.prevButton);
+    prevGrey = newInnerSpan(ui.prevButton);
     
     indexSpan.appendChild(prevLink);
     indexDiv.appendChild(indexSpan);
     
     nextLink = document.createElement("a");
-    nextLink.appendChild(document.createTextNode(ui.nextButton));
+    nextLink.appendChild(newInnerSpan(ui.nextButton));
     nextLink.onclick = function(){changePage(currentPage + 1, true)};
     nextLink.style.cursor = "pointer";
-    nextGrey = document.createTextNode(ui.nextButton);
+    nextGrey = newInnerSpan(ui.nextButton);
     
     indexSpan.appendChild(prevLink);
-    indexSpan.appendChild(document.createTextNode(ui.separator));
+    indexSpan.appendChild(newInnerSpan(ui.separator));
     
-    pageLinksEnd = document.createTextNode(ui.separator);
+    pageLinksEnd = newInnerSpan(ui.separator);
     indexSpan.appendChild(pageLinksEnd);
     
     for (var i = 0; i < totalPages; i++) {
@@ -419,14 +423,20 @@ function createControls() {
     pageGrey.innerHTML = ui.currentL + "1" + ui.currentRight;
     
     pageEllipses = [];
-    pageEllipses[0] = document.createTextNode(ui.ellipses);
-    pageEllipses[1] = document.createTextNode(ui.ellipses);
+    pageEllipses[0] = newInnerSpan(ui.ellipses);
+    pageEllipses[1] = newInnerSpan(ui.ellipses);
     
     indexSpan.appendChild(nextLink);
     
     indexDiv.appendChild(indexSpan);
     
     prevNextThreadBox.parentNode.insertBefore(indexDiv, prevNextThreadBox);
+}
+
+function newInnerSpan(innerHTML) {
+    var innerSpan = document.createElement("span");
+    innerSpan.innerHTML = innerHTML;
+    return innerSpan;
 }
 
 function createNewPageControls() {
@@ -443,7 +453,9 @@ function createNewPageControls() {
 
 function createPageButton(i) {
     pageLinks[i] = document.createElement("a");
-    pageLinks[i].appendChild(document.createTextNode(ui.pageL + (i + 1) + ui.pageR));
+    var pageButtonText = document.createElement("span");
+    pageButtonText.innerHTML = ui.pageL + (i + 1) + ui.pageR;
+    pageLinks[i].appendChild(pageButtonText);
     pageLinks[i].onclick = createPageFunction(i);
     pageLinks[i].style.cursor = "pointer";
     indexSpan.insertBefore(pageLinks[i], pageLinksEnd);
