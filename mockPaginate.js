@@ -27,13 +27,13 @@
     var ui = {
         prevButton: "« Prev",
         nextButton: "Next »",
-        separator:  "  |  ",
-        ellipses:   " ... ",
-        currentL:   "<b>[",
-        currentR:   "]</b>",
-        pageL:       "",
-        pageR:      "",
-        comma:      ", ",
+        separator: "  |  ",
+        ellipses: " ... ",
+        currentL: "<b>[",
+        currentR: "]</b>",
+        pageL: "",
+        pageR: "",
+        comma: ", ",
     }
 
 
@@ -83,12 +83,12 @@ function setup() {
     newCommentsObserver = new MutationObserver(newCommentsChange);
     newCommentsObserver.observe(newCommentsMessage, {attributes:true});
     
-    if (allComments.length > 3 && allComments[allComments.length - 4].id == "newcommentsmsg") {
+    if (allComments.length >= 4 && allComments[allComments.length - 4].id == "newcommentsmsg") {
         allComments.splice(allComments.length - 4, 4);
     } else {
         allComments.splice(allComments.length - 3, 3);
     }
-    //There are three extra comment class elements at the end of the page, and a fourth if the "New Comments" box is there.
+    //There are always three extra comment class elements at the end of the page, and a fourth if the "New Comments" box is there.
     
     totalPages = Math.ceil(allComments.length / commentsPerPage);
 
@@ -105,38 +105,34 @@ function setup() {
 
 var newCommentsChange = function(changes) {
     for(var change of changes) {
-        if (change.type == 'attributes') {
-            if (change.attributeName == "style") {
+        if (change.type == 'attributes' && change.attributeName == "style") {
+            if (newCommentsMessage.style.display == "none") {
+                // The new comments message div has its visibility changed when: 1) New comments are loaded and 2) The user clicks show comments.
             
-                // The new comments message div has its visibility changed when: 1) New comments appear and 2) The user clicks show comments, so:
-                // Refresh everything, get all the comments, redo the pages, refresh the controls, scroll back to the correct position?
-                // Need to test on the last page and on earlier pages.
-                
                 var previousComments = allComments.length;
-                
+            
                 allComments = [].slice.call(document.getElementsByClassName("comments"));
-                if (allComments[allComments.length - 5].id == "newcommentsmsg") {
+                if (allComments.length >= 5 && allComments[allComments.length - 5].id == "newcommentsmsg") {
                     allComments.splice(allComments.length - 5, 5);
                 } else {
                     allComments.splice(allComments.length - 4, 4);
                 }
                 // Page controls have the class "comments", so they need to be removed from the list too.
-                // Do this more robustly, check through last few for ids?
-                
+            
                 totalPages = Math.ceil(allComments.length / commentsPerPage);
-                
+            
                 prepareNewComments(previousComments);
-                
+            
                 createNewPageControls();
                 updateControls();
                 updatePostCommentCount();
-                
+            
                 if (allComments.length > previousComments && currentPage < totalPages - 1) {
                     if (bounceOnLoad) {
                         bounceElement(pageLinks[totalPages - 1]);
                     }
                 }
-                
+            
                 return;
             }
         }
