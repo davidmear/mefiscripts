@@ -23,6 +23,12 @@
 //  If new comments are loaded on a later page, bounce the last page in the list.
     var bounceOnLoad = true;
 //
+//  Display a page list at the top of the comments.
+    var showTopControls = true;
+//
+//  Display a page list at the bottom of the comments.
+    var showBottomControls = true;
+//
 //  Text elements and styling.
     var ui = {
         prevButton: "« Prev",
@@ -54,19 +60,8 @@ var triangleContainer;
 var postCommentCount;
 
 // Controls
-var indexDiv;
-var indexSpan;
-var prevLink;
-var nextLink;
-var prevGrey;
-var nextGrey;
-var prevGreyed = false;
-var nextGreyed = false;
-var pageLinks = [];
-var pageLinksEnd;
-var pageCommas = [];
-var pageGrey;
-var pageEllipses = [];
+var topControls;
+var bottomControls;
 
 function setup() {
     browserAdjustments();
@@ -83,6 +78,8 @@ function setup() {
     newCommentsObserver = new MutationObserver(newCommentsChange);
     newCommentsObserver.observe(newCommentsMessage, {attributes:true});
     
+    var topCommentsElement = allComments[0];
+    
     if (allComments.length >= 4 && allComments[allComments.length - 4].id == "newcommentsmsg") {
         allComments.splice(allComments.length - 4, 4);
     } else {
@@ -93,7 +90,12 @@ function setup() {
     totalPages = Math.ceil(allComments.length / commentsPerPage);
 
     prepareAll();
-    createControls();
+    if (showTopControls) {
+        topControls = new Controls(topCommentsElement);
+    }
+    if (showBottomControls) {
+        bottomControls = new Controls(prevNextThreadBox);
+    }
     updateControls();
     
     if (window.location.hash) {
@@ -129,7 +131,7 @@ var newCommentsChange = function(changes) {
             
                 if (allComments.length > previousComments && currentPage < totalPages - 1) {
                     if (bounceOnLoad) {
-                        bounceElement(pageLinks[totalPages - 1]);
+                        bounceLastPage();
                     }
                 }
             
@@ -199,9 +201,8 @@ function refreshFlow() {
 
 function changePage(newPage, changeHash) {
     if (newPage >= 0 && newPage < totalPages && newPage != currentPage) {
-                
-        indexSpan.insertBefore(pageLinks[currentPage], pageGrey);
-        pageGrey.remove(true);
+        
+        removePageGrey();
         
         var i;
         
@@ -225,7 +226,11 @@ function changePage(newPage, changeHash) {
         refreshFlow();
         
         // Jump to the top
-        allComments[currentPage * commentsPerPage].previousSibling.scrollIntoView(true);
+        if (showTopControls) {
+            topControls.indexDiv.previousSibling.scrollIntoView(true);
+        } else {
+            allComments[currentPage * commentsPerPage].previousSibling.scrollIntoView(true);
+        }
         
         if (changeHash) {
           updateHash();
@@ -317,18 +322,71 @@ function updatePostCommentCount() {
 }
 
 function updateControls() {
-    if (indexSpan.contains(pageLinks[currentPage])) {
-        indexSpan.insertBefore(pageGrey, pageLinks[currentPage]);
-        pageGrey.innerHTML = ui.currentL + (currentPage + 1) + ui.currentR;
-        pageLinks[currentPage].remove(true);
+    if (showTopControls) {
+        topControls.updateControls();
+    }
+    if (showBottomControls) {
+        bottomControls.updateControls();
+    }
+}
+
+function createNewPageControls() {
+    if (showTopControls) {
+        topControls.createNewPageControls();
+    }
+    if (showBottomControls) {
+        bottomControls.createNewPageControls();
+    }
+}
+
+function removePageGrey() {
+    if (showTopControls) {
+        topControls.removePageGrey();
+    }
+    if (showBottomControls) {
+        bottomControls.removePageGrey();
+    }
+}
+
+function bounceLastPage() {
+    // Top controls should never be visible when this happens.
+    if (showBottomControls) {
+        bounceElement(bottomControls.pageLinks[totalPages - 1]);
+    }
+}
+
+
+function Controls(locationElement) {
+    this.indexDiv;
+    this.indexSpan;
+    this.prevLink;
+    this.nextLink;
+    this.prevGrey;
+    this.nextGrey;
+    this.prevGreyed = false;
+    this.nextGreyed = false;
+    this.pageLinks = [];
+    this.pageLinksEnd;
+    this.pageCommas = [];
+    this.pageGrey;
+    this.pageEllipses = [];
+    
+    this.createControls(locationElement);
+}
+
+Controls.prototype.updateControls = function() {
+    if (this.indexSpan.contains(this.pageLinks[currentPage])) {
+        this.indexSpan.insertBefore(this.pageGrey, this.pageLinks[currentPage]);
+        this.pageGrey.innerHTML = ui.currentL + (currentPage + 1) + ui.currentR;
+        this.pageLinks[currentPage].remove(true);
     }
     
     if (totalPages > maxListedPages) {
-        indexSpan.insertBefore(pageEllipses[0], pageCommas[0].nextSibling);
+        this.indexSpan.insertBefore(this.pageEllipses[0], this.pageCommas[0].nextSibling);
         if (currentPage == totalPages - 1) {
-            indexSpan.insertBefore(pageEllipses[1], pageGrey);
+            this.indexSpan.insertBefore(this.pageEllipses[1], this.pageGrey);
         } else {
-            indexSpan.insertBefore(pageEllipses[1], pageLinks[totalPages - 1]);
+            this.indexSpan.insertBefore(this.pageEllipses[1], this.pageLinks[totalPages - 1]);
         }
         
         // Reduce padding to enforce maxListedPages
@@ -339,131 +397,140 @@ function updateControls() {
         var highPage = Math.max(currentPage + adjustedPad, adjustedPad * 2);
         for (var i = 1; i < totalPages - 1; i++) {
             if (i >= lowPage && i <= highPage) {
-                pageLinks[i].style.display = "";
-                pageCommas[i].style.display = "";
+                this.pageLinks[i].style.display = "";
+                this.pageCommas[i].style.display = "";
             } else {
-                pageLinks[i].style.display = "none";
-                pageCommas[i].style.display = "none";
+                this.pageLinks[i].style.display = "none";
+                this.pageCommas[i].style.display = "none";
             }
         }
         
         if (highPage + 1 >= totalPages - 1) {
-            pageEllipses[1].remove(true);
+            this.pageEllipses[1].remove(true);
         }
         if (lowPage - 1 <= 0) {
-            pageEllipses[0].remove(true);
+            this.pageEllipses[0].remove(true);
         }
     }
     
     if (currentPage == 0) {
-        if (!prevGreyed) {
-            indexSpan.insertBefore(prevGrey, prevLink);
-            prevLink.remove(true);
-            prevGreyed = true;
+        if (!this.prevGreyed) {
+            this.indexSpan.insertBefore(this.prevGrey, this.prevLink);
+            this.prevLink.remove(true);
+            this.prevGreyed = true;
         }
     } else {
-        if (prevGreyed) {
-            indexSpan.insertBefore(prevLink, prevGrey);
-            prevGrey.remove(true);
-            prevGreyed = false;
+        if (this.prevGreyed) {
+            this.indexSpan.insertBefore(this.prevLink, this.prevGrey);
+            this.prevGrey.remove(true);
+            this.prevGreyed = false;
         }
     }
     if (currentPage == totalPages - 1 || totalPages == 0) {
-        if (!nextGreyed) {
-            indexSpan.insertBefore(nextGrey, nextLink);
-            nextLink.remove(true);
-            nextGreyed = true;
+        if (!this.nextGreyed) {
+            this.indexSpan.insertBefore(this.nextGrey, this.nextLink);
+            this.nextLink.remove(true);
+            this.nextGreyed = true;
         }
     } else {
-        if (nextGreyed) {
-            indexSpan.insertBefore(nextLink, nextGrey);
-            nextGrey.remove();
-            nextGreyed = false;
+        if (this.nextGreyed) {
+            this.indexSpan.insertBefore(this.nextLink, this.nextGrey);
+            this.nextGrey.remove();
+            this.nextGreyed = false;
         }
     }       
 }
 
-function createControls() {
+Controls.prototype.createControls = function(locationElement) {
     
-    indexDiv = document.createElement("div");
-    indexDiv.className = "comments";
-    indexSpan = document.createElement("span");
-    indexSpan.className = "whitesmallcopy";
-    indexSpan.style.fontSize = "11px";
+    this.indexDiv = document.createElement("div");
+    this.indexDiv.className = "comments";
+    this.indexDiv.style.marginTop = "0";
+    this.indexDiv.style.marginBottom = "2em";
+    this.indexSpan = document.createElement("span");
+    this.indexSpan.className = "whitesmallcopy";
+    this.indexSpan.style.fontSize = "11px";
 
-    prevLink = document.createElement("a");
-    prevLink.appendChild(newInnerSpan(ui.prevButton));
-    prevLink.onclick = function(){changePage(currentPage - 1, true)};
-    prevLink.style.cursor = "pointer";
-    prevGrey = newInnerSpan(ui.prevButton);
+    this.prevLink = document.createElement("a");
+    this.prevLink.appendChild(newInnerSpan(ui.prevButton));
+    this.prevLink.onclick = function(){changePage(currentPage - 1, true)};
+    this.prevLink.style.cursor = "pointer";
+    this.prevGrey = newInnerSpan(ui.prevButton);
     
-    indexSpan.appendChild(prevLink);
-    indexDiv.appendChild(indexSpan);
+    this.indexSpan.appendChild(this.prevLink);
+    this.indexDiv.appendChild(this.indexSpan);
     
-    nextLink = document.createElement("a");
-    nextLink.appendChild(newInnerSpan(ui.nextButton));
-    nextLink.onclick = function(){changePage(currentPage + 1, true)};
-    nextLink.style.cursor = "pointer";
-    nextGrey = newInnerSpan(ui.nextButton);
+    this.nextLink = document.createElement("a");
+    this.nextLink.appendChild(newInnerSpan(ui.nextButton));
+    this.nextLink.onclick = function(){changePage(currentPage + 1, true)};
+    this.nextLink.style.cursor = "pointer";
+    this.nextGrey = newInnerSpan(ui.nextButton);
     
-    indexSpan.appendChild(prevLink);
-    indexSpan.appendChild(newInnerSpan(ui.separator));
+    this.indexSpan.appendChild(this.prevLink);
+    this.indexSpan.appendChild(newInnerSpan(ui.separator));
     
-    pageLinksEnd = newInnerSpan(ui.separator);
-    indexSpan.appendChild(pageLinksEnd);
+    this.pageLinksEnd = newInnerSpan(ui.separator);
+    this.indexSpan.appendChild(this.pageLinksEnd);
     
     for (var i = 0; i < totalPages; i++) {
-        createPageButton(i);
+        this.createPageButton(i);
     }
-    pageGrey = document.createElement("span");
-    pageGrey.innerHTML = ui.currentL + "1" + ui.currentRight;
+    this.pageGrey = document.createElement("span");
+    this.pageGrey.innerHTML = ui.currentL + "1" + ui.currentRight;
     
-    pageEllipses = [];
-    pageEllipses[0] = newInnerSpan(ui.ellipses);
-    pageEllipses[1] = newInnerSpan(ui.ellipses);
+    this.pageEllipses = [];
+    this.pageEllipses[0] = newInnerSpan(ui.ellipses);
+    this.pageEllipses[1] = newInnerSpan(ui.ellipses);
     
-    indexSpan.appendChild(nextLink);
+    this.indexSpan.appendChild(this.nextLink);
     
-    indexDiv.appendChild(indexSpan);
+    this.indexDiv.appendChild(this.indexSpan);
     
-    prevNextThreadBox.parentNode.insertBefore(indexDiv, prevNextThreadBox);
+    locationElement.parentNode.insertBefore(this.indexDiv, locationElement);
 }
+
+Controls.prototype.removePageGrey = function() {
+    this.indexSpan.insertBefore(this.pageLinks[currentPage], this.pageGrey);
+    this.pageGrey.remove(true);
+}
+
+Controls.prototype.createNewPageControls = function() {
+    var i = this.pageLinks.length;
+    if (this.pageLinks.length < totalPages) {
+        this.pageCommas[i - 1] = document.createElement("span");
+        this.pageCommas[i - 1].innerHTML = ui.comma;
+        this.indexSpan.insertBefore(this.pageCommas[i - 1], this.pageLinksEnd);
+    }
+    while (this.pageLinks.length < totalPages) {
+        this.createPageButton(i);
+    }
+}
+
+Controls.prototype.createPageButton = function(i) {
+    this.pageLinks[i] = document.createElement("a");
+    var pageButtonText = document.createElement("span");
+    pageButtonText.innerHTML = ui.pageL + (i + 1) + ui.pageR;
+    this.pageLinks[i].appendChild(pageButtonText);
+    this.pageLinks[i].onclick = this.createPageFunction(i);
+    this.pageLinks[i].style.cursor = "pointer";
+    this.indexSpan.insertBefore(this.pageLinks[i], this.pageLinksEnd);
+    if (i < totalPages - 1) {
+        this.pageCommas[i] = document.createElement("span");
+        this.pageCommas[i].innerHTML = ui.comma;
+        this.indexSpan.insertBefore(this.pageCommas[i], this.pageLinksEnd);
+    }
+}
+
+Controls.prototype.createPageFunction = function(i) {
+    return function() {changePage(i, true)};
+}
+
+// Help functions
 
 function newInnerSpan(innerHTML) {
     var innerSpan = document.createElement("span");
     innerSpan.innerHTML = innerHTML;
     return innerSpan;
-}
-
-function createNewPageControls() {
-    var i = pageLinks.length;
-    if (pageLinks.length < totalPages) {
-        pageCommas[i - 1] = document.createElement("span");
-        pageCommas[i - 1].innerHTML = ui.comma;
-        indexSpan.insertBefore(pageCommas[i - 1], pageLinksEnd);
-    }
-    while (pageLinks.length < totalPages) {
-        createPageButton(i);
-    }
-}
-
-function createPageButton(i) {
-    pageLinks[i] = document.createElement("a");
-    var pageButtonText = document.createElement("span");
-    pageButtonText.innerHTML = ui.pageL + (i + 1) + ui.pageR;
-    pageLinks[i].appendChild(pageButtonText);
-    pageLinks[i].onclick = createPageFunction(i);
-    pageLinks[i].style.cursor = "pointer";
-    indexSpan.insertBefore(pageLinks[i], pageLinksEnd);
-    if (i < totalPages - 1) {
-        pageCommas[i] = document.createElement("span");
-        pageCommas[i].innerHTML = ui.comma;
-        indexSpan.insertBefore(pageCommas[i], pageLinksEnd);
-    }
-}
-
-function createPageFunction(i) {
-    return function() {changePage(i, true)};
 }
 
 function bounceElement(element) {
