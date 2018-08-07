@@ -2,33 +2,35 @@
 // @name            Mock Paginate
 // @description     Adds the appearance of pages to threads by only showing one section of comments at a time.
 // @namespace       github.com/davidmear/mefiscripts
-// @version         0.5
+// @version         0.6
 // @include         https://metafilter.com/*
 // @include         https://*.metafilter.com/*
 // ==/UserScript==
 
 
 
-//  Options
-//
+//================================//
+//            Options             //
+//================================//
+
 //  How many comments should each page display.
     var commentsPerPage = 100;
-//
+
 //  How many pages should be listed before switching to a condensed page list.
     var maxListedPages = 10;
-//
+
 //  How many next and previous pages to display in a condensed list.
     var condensedPad = 2;
-//
+
 //  If new comments are loaded on a later page, bounce the last page in the list.
     var bounceOnLoad = true;
-//
+
 //  Display a page list at the top of the comments.
     var showTopControls = true;
-//
+
 //  Display a page list at the bottom of the comments.
     var showBottomControls = true;
-//
+
 //  Text elements and styling.
     var ui = {
         prevButton: "« Prev",
@@ -43,6 +45,10 @@
     }
 
 
+
+//================================//
+//           Variables            //
+//================================//
 
 // Status
 var currentPage = 0;
@@ -62,6 +68,11 @@ var postCommentCount;
 // Controls
 var topControls;
 var bottomControls;
+
+
+//================================//
+//             Setup              //
+//================================//
 
 function setup() {
     browserAdjustments();
@@ -90,12 +101,7 @@ function setup() {
     totalPages = Math.ceil(allComments.length / commentsPerPage);
 
     prepareAll();
-    if (showTopControls) {
-        topControls = new Controls(topCommentsElement);
-    }
-    if (showBottomControls) {
-        bottomControls = new Controls(prevNextThreadBox);
-    }
+    createControls(topCommentsElement);
     updateControls();
     
     if (window.location.hash) {
@@ -104,6 +110,34 @@ function setup() {
     window.addEventListener("hashchange", hashChanged, false);
     
 };
+
+function prepareAll() {
+    var display;
+    
+    commentAnchors = [];
+    for (var i = 0; i < allComments.length; i++) {
+    
+        if (i >= currentPage * commentsPerPage && i < (currentPage + 1) * commentsPerPage) {
+            display = "";
+        } else {
+            display = "none";
+        }
+        
+        setCommentVisibility(i, display);
+        
+        if (allComments[i].previousSibling) {
+            commentAnchors[i] = allComments[i].previousSibling.name;
+        }
+
+    };
+    
+    refreshFlow();
+}
+
+
+//================================//
+//            Updates             //
+//================================//
 
 var newCommentsChange = function(changes) {
     for(var change of changes) {
@@ -139,29 +173,6 @@ var newCommentsChange = function(changes) {
             }
         }
     }
-}
-
-function prepareAll() {
-    var display;
-    
-    commentAnchors = [];
-    for (var i = 0; i < allComments.length; i++) {
-    
-        if (i >= currentPage * commentsPerPage && i < (currentPage + 1) * commentsPerPage) {
-            display = "";
-        } else {
-            display = "none";
-        }
-        
-        setCommentVisibility(i, display);
-        
-        if (allComments[i].previousSibling) {
-            commentAnchors[i] = allComments[i].previousSibling.name;
-        }
-
-    };
-    
-    refreshFlow();
 }
 
 function prepareNewComments(previousComments) {
@@ -318,6 +329,19 @@ function findPostCommentCount() {
 function updatePostCommentCount() {
     if (postCommentCount) {
         postCommentCount.nodeValue = postCommentCount.nodeValue.replace(/\d+/, allComments.length);
+    }
+}
+
+//================================//
+//            Controls            //
+//================================//
+
+function createControls(topCommentsElement) {
+    if (showTopControls) {
+        topControls = new Controls(topCommentsElement);
+    }
+    if (showBottomControls) {
+        bottomControls = new Controls(prevNextThreadBox);
     }
 }
 
@@ -525,7 +549,9 @@ Controls.prototype.createPageFunction = function(i) {
     return function() {changePage(i, true)};
 }
 
-// Help functions
+//================================//
+//        Helper Functions        //
+//================================//
 
 function newInnerSpan(innerHTML) {
     var innerSpan = document.createElement("span");
