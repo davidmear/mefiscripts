@@ -68,6 +68,7 @@ var postCommentCount;
 // Controls
 var topControls;
 var bottomControls;
+var controlsID = "paginationControls";
 
 
 //================================//
@@ -147,12 +148,18 @@ var newCommentsChange = function(changes) {
                 // The new comments message div has its visibility changed when: 1) New comments are loaded and 2) The user clicks show comments.
             
                 var previousComments = allComments.length;
-            
+                    
                 allComments = [].slice.call(document.getElementsByClassName("comments"));
+                if (allComments[0].id == controlsID) {
+                    allComments.shift();
+                }
+                var trim;
                 if (allComments.length >= 5 && allComments[allComments.length - 5].id == "newcommentsmsg") {
-                    allComments.splice(allComments.length - 5, 5);
+                    trim = showBottomControls? 5 : 4;
+                    allComments.splice(allComments.length - trim, trim);
                 } else {
-                    allComments.splice(allComments.length - 4, 4);
+                    trim = showBottomControls? 4 : 3;
+                    allComments.splice(allComments.length - trim, trim);
                 }
                 // Page controls have the class "comments", so they need to be removed from the list too.
             
@@ -470,6 +477,7 @@ Controls.prototype.createControls = function(locationElement) {
     
     this.indexDiv = document.createElement("div");
     this.indexDiv.className = "comments";
+    this.indexDiv.id = controlsID;
     this.indexDiv.style.marginTop = "0";
     this.indexDiv.style.marginBottom = "2em";
     this.indexSpan = document.createElement("span");
