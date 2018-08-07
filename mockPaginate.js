@@ -90,12 +90,18 @@ function setup() {
     showBottomControls = showBottomControls || !showTopControls;
     
     allComments = [].slice.call(document.getElementsByClassName("comments")); // Gets a list of all the comment divs
+    if (allComments.length == 0) {
+        // Not on a thread page.
+        return;
+    }
     prevNextThreadBox = allComments[allComments.length - 3];
     findPostCommentCount();
     
     newCommentsMessage = document.getElementById("newcommentsmsg");
-    newCommentsObserver = new MutationObserver(newCommentsChange);
-    newCommentsObserver.observe(newCommentsMessage, {attributes:true});
+    if (newCommentsMessage) {
+        newCommentsObserver = new MutationObserver(newCommentsChange);
+        newCommentsObserver.observe(newCommentsMessage, {attributes:true});
+    }
     
     var topCommentsElement = allComments[0];
     
