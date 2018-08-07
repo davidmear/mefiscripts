@@ -80,6 +80,7 @@ function setup() {
     maxListedPages = parseInt(maxListedPages) <= 0? 1 : parseInt(maxListedPages) || 10;
     commentsPerPage = parseInt(commentsPerPage) <= 0? 1 : parseInt(commentsPerPage) || 100;
     condensedPad = parseInt(condensedPad) || 0;
+    showBottomControls = showBottomControls || !showTopControls;
     
     allComments = [].slice.call(document.getElementsByClassName("comments")); // Gets a list of all the comment divs
     prevNextThreadBox = allComments[allComments.length - 3];
