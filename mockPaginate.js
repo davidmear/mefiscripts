@@ -101,7 +101,7 @@ function setup() {
     //There are always three extra comment class elements at the end of the page, and a fourth if the "New Comments" box is there.
     
     totalPages = Math.ceil(allComments.length / commentsPerPage);
-
+    
     prepareAll();
     createControls(topCommentsElement);
     updateControls();
@@ -118,7 +118,7 @@ function prepareAll() {
     
     commentAnchors = [];
     for (var i = 0; i < allComments.length; i++) {
-    
+        
         if (i >= currentPage * commentsPerPage && i < (currentPage + 1) * commentsPerPage) {
             display = "";
         } else {
@@ -130,7 +130,7 @@ function prepareAll() {
         if (allComments[i].previousSibling) {
             commentAnchors[i] = allComments[i].previousSibling.name;
         }
-
+    
     };
     
     refreshFlow();
@@ -146,9 +146,14 @@ var newCommentsChange = function(changes) {
         if (change.type == 'attributes' && change.attributeName == "style") {
             if (newCommentsMessage.style.display == "none") {
                 // The new comments message div has its visibility changed when: 1) New comments are loaded and 2) The user clicks show comments.
-            
+                
                 var previousComments = allComments.length;
-                    
+                
+                if (previousComments == 0) {
+                    var firstComment = document.getElementsByClassName("comments")[0];
+                    firstComment.parentNode.insertBefore(topControls.indexDiv, firstComment);
+                }
+                
                 allComments = [].slice.call(document.getElementsByClassName("comments"));
                 if (allComments[0].id == controlsID) {
                     allComments.shift();
@@ -162,21 +167,21 @@ var newCommentsChange = function(changes) {
                     allComments.splice(allComments.length - trim, trim);
                 }
                 // Page controls have the class "comments", so they need to be removed from the list too.
-            
+                
                 totalPages = Math.ceil(allComments.length / commentsPerPage);
-            
+                
                 prepareNewComments(previousComments);
-            
+                
                 createNewPageControls();
                 updateControls();
                 updatePostCommentCount();
-            
+                
                 if (allComments.length > previousComments && currentPage < totalPages - 1) {
                     if (bounceOnLoad) {
                         bounceLastPage();
                     }
                 }
-            
+                
                 return;
             }
         }
@@ -187,7 +192,7 @@ function prepareNewComments(previousComments) {
     var display;
     
     for (var i = previousComments; i < allComments.length; i++) {
-    
+        
         if (i >= currentPage * commentsPerPage && i < (currentPage + 1) * commentsPerPage) {
             display = "";
         } else {
@@ -199,7 +204,7 @@ function prepareNewComments(previousComments) {
         if (allComments[i].previousSibling) {
             commentAnchors[i] = allComments[i].previousSibling.name;
         }
-
+    
     };
 }
 
@@ -237,7 +242,7 @@ function changePage(newPage, changeHash) {
         for (i = currentPage * commentsPerPage; i < Math.min((currentPage + 1) * commentsPerPage, allComments.length); i++) {
             setCommentVisibility(i, "");
         }
-                
+        
         updateControls();
         
         checkForLinkedComment();
@@ -407,6 +412,11 @@ function Controls(locationElement) {
 }
 
 Controls.prototype.updateControls = function() {
+    if (allComments.length == 0) {
+        this.indexDiv.style.display = "none";
+    } else {
+        this.indexDiv.style.display = "";
+    }
     if (this.indexSpan.contains(this.pageLinks[currentPage])) {
         this.indexSpan.insertBefore(this.pageGrey, this.pageLinks[currentPage]);
         this.pageGrey.innerHTML = ui.currentL + (currentPage + 1) + ui.currentR;
@@ -483,7 +493,7 @@ Controls.prototype.createControls = function(locationElement) {
     this.indexSpan = document.createElement("span");
     this.indexSpan.className = "whitesmallcopy";
     this.indexSpan.style.fontSize = "11px";
-
+    
     this.prevLink = document.createElement("a");
     this.prevLink.appendChild(newInnerSpan(ui.prevButton));
     this.prevLink.onclick = function(){changePage(currentPage - 1, true)};
@@ -529,7 +539,7 @@ Controls.prototype.removePageGrey = function() {
 
 Controls.prototype.createNewPageControls = function() {
     var i = this.pageLinks.length;
-    if (this.pageLinks.length < totalPages) {
+    if (this.pageLinks.length > 0 && this.pageLinks.length < totalPages) {
         this.pageCommas[i - 1] = document.createElement("span");
         this.pageCommas[i - 1].innerHTML = ui.comma;
         this.indexSpan.insertBefore(this.pageCommas[i - 1], this.pageLinksEnd);
