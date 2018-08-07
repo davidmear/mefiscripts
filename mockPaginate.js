@@ -2,7 +2,7 @@
 // @name            Mock Paginate
 // @description     Adds the appearance of pages to threads by only showing one section of comments at a time.
 // @namespace       github.com/davidmear/mefiscripts
-// @version         0.6
+// @version         0.7
 // @include         https://metafilter.com/*
 // @include         https://*.metafilter.com/*
 // ==/UserScript==
@@ -30,6 +30,12 @@
 
 //  Display a page list at the bottom of the comments.
     var showBottomControls = true;
+
+//  Always display page lists, even with zero comments.
+    var alwaysShowControls = false;
+
+//  Display page lists if there is only one page.
+    var showSinglePageControls = true;
 
 //  Text elements and styling.
     var ui = {
@@ -412,7 +418,9 @@ function Controls(locationElement) {
 }
 
 Controls.prototype.updateControls = function() {
-    if (allComments.length == 0) {
+    if (alwaysShowControls) {
+        this.indexDiv.style.display = "";
+    } else if (totalPages < 2 && !showSinglePageControls || allComments.length == 0) {
         this.indexDiv.style.display = "none";
     } else {
         this.indexDiv.style.display = "";
@@ -480,7 +488,7 @@ Controls.prototype.updateControls = function() {
             this.nextGrey.remove();
             this.nextGreyed = false;
         }
-    }       
+    }
 }
 
 Controls.prototype.createControls = function(locationElement) {
