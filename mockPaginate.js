@@ -194,6 +194,13 @@ var newCommentsChange = function(changes) {
                     }
                 }
                 
+                if (previousComments <= commentsPerPage && !showSinglePageControls)
+                    // Controls newly visible.
+                    refreshFlow();
+                }
+                
+                return;
+            } else {
                 return;
             }
         }
@@ -560,6 +567,7 @@ Controls.prototype.createNewPageControls = function() {
     }
     while (this.pageLinks.length < totalPages) {
         this.createPageButton(i);
+        i++;
     }
 }
 
