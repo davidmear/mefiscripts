@@ -122,12 +122,18 @@ function setup() {
 function trimNonComments() {
     var n;
     var last;
+    
+    // Special case for IRL;
+    var irl = window.location.hostname == "irl.metafilter.com";
+    var nodeCheck = irl? 2 : 1;
     for (var i = 0; i < allComments.length; i++) {
         if (allComments[i].childNodes) {
-            n = allComments[i].childNodes[allComments[i].childNodes.length - 1];
+            n = allComments[i].childNodes[allComments[i].childNodes.length - nodeCheck];
             if (n && n.firstChild && n.firstChild.nodeValue == "posted by ") {
                 // This is a comment.
-                if (i < allComments.length - 1) {
+                if (irl) {
+                    last = allComments[i].nextElementSibling.nextElementSibling;
+                } else if (i < allComments.length - 1) {
                     last = allComments[i + 1];
                 }
                 continue;
@@ -153,8 +159,8 @@ function prepareAll() {
         
         setCommentVisibility(i, display);
         
-        if (allComments[i].previousSibling) {
-            commentAnchors[i] = allComments[i].previousSibling.name;
+        if (allComments[i].previousElementSibling) {
+            commentAnchors[i] = allComments[i].previousElementSibling.name;
         }
     
     };
@@ -227,8 +233,8 @@ function prepareNewComments(previousComments) {
         
         setCommentVisibility(i, display);
         
-        if (allComments[i].previousSibling) {
-            commentAnchors[i] = allComments[i].previousSibling.name;
+        if (allComments[i].previousElementSibling) {
+            commentAnchors[i] = allComments[i].previousElementSibling.name;
         }
     
     };
@@ -238,8 +244,8 @@ function setCommentVisibility(i, show) {
     try {
         // Toggle the comment visibility
         allComments[i].style.display = show; // Comment
-        allComments[i].nextSibling.style.display = show; // First <br /> after comment
-        allComments[i].nextSibling.nextSibling.style.display = show; // Second <br /> after comment
+        allComments[i].nextElementSibling.style.display = show; // First <br /> after comment
+        allComments[i].nextElementSibling.nextElementSibling.style.display = show; // Second <br /> after comment
     } catch (e) {
         console.log("Setting comment " + i + " - " + e);
     }
@@ -277,9 +283,9 @@ function changePage(newPage, changeHash) {
         
         // Jump to the top
         if (showTopControls) {
-            topControls.indexDiv.previousSibling.scrollIntoView(true);
+            topControls.indexDiv.previousElementSibling.scrollIntoView(true);
         } else {
-            allComments[currentPage * commentsPerPage].previousSibling.scrollIntoView(true);
+            allComments[currentPage * commentsPerPage].previousElementSibling.scrollIntoView(true);
         }
         
         if (changeHash) {
@@ -318,7 +324,7 @@ function jumpToComment(commentAnchor) {
         if (commentAnchors[i] == commentAnchor) {
             linkedComment = commentAnchors[i];
             changePage(Math.floor(i / commentsPerPage), false);
-            allComments[i].previousSibling.scrollIntoView(true);
+            allComments[i].previousElementSibling.scrollIntoView(true);
         }
     }
 }
