@@ -360,11 +360,26 @@ function hashChanged() {
 function findPostCommentCount() {
     try {
         var byline = document.getElementsByClassName("smallcopy postbyline")[0];
-        for (var i = 0; i < byline.childNodes.length; i++) {
-            if (byline.childNodes[i].nodeValue) {
-                if (byline.childNodes[i].nodeValue.indexOf("total)") >= 0) {
-                    postCommentCount = byline.childNodes[i];
-                    return;
+        if (byline) {
+            for (var i = 0; i < byline.childNodes.length; i++) {
+                if (byline.childNodes[i].nodeValue) {
+                    if (byline.childNodes[i].nodeValue.indexOf("total)") >= 0) {
+                        postCommentCount = byline.childNodes[i];
+                        return;
+                    }
+                }
+            }
+        }
+        // Fallback for music's byline which is only class "smallcopy"
+        var smallcopyElements = document.getElementsByClassName("smallcopy");
+        for (var j = 0; j < smallcopyElements.length; j++) {
+            byline = smallcopyElements[j];
+            for (i = 0; i < byline.childNodes.length; i++) {
+                if (byline.childNodes[i].nodeValue) {
+                    if (byline.childNodes[i].nodeValue.indexOf("comments total)") >= 0) {
+                        postCommentCount = byline.childNodes[i];
+                        return;
+                    }
                 }
             }
         }
@@ -374,6 +389,9 @@ function findPostCommentCount() {
 }
 
 function updatePostCommentCount() {
+    if (!postCommentCount) {
+        findPostCommentCount();
+    }
     if (postCommentCount) {
         postCommentCount.nodeValue = postCommentCount.nodeValue.replace(/\d+/, allComments.length);
     }
