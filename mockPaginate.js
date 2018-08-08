@@ -2,7 +2,7 @@
 // @name            Mock Paginate
 // @description     Adds the appearance of pages to threads by only showing one section of comments at a time.
 // @namespace       github.com/davidmear/mefiscripts
-// @version         0.7
+// @version         0.8
 // @include         https://metafilter.com/*
 // @include         https://*.metafilter.com/*
 // ==/UserScript==
@@ -65,7 +65,7 @@ var linkedComment;
 // References
 var allComments;
 var commentAnchors;
-var prevNextThreadBox;
+var afterCommentsElement;
 var newCommentsMessage;
 var newCommentsObserver;
 var triangleContainer;
@@ -94,7 +94,7 @@ function setup() {
         // Not on a thread page.
         return;
     }
-    prevNextThreadBox = allComments[allComments.length - 3];
+    
     findPostCommentCount();
     
     newCommentsMessage = document.getElementById("newcommentsmsg");
@@ -104,14 +104,8 @@ function setup() {
     }
     
     var topCommentsElement = allComments[0];
-    
-    if (allComments.length >= 4 && allComments[allComments.length - 4].id == "newcommentsmsg") {
-        allComments.splice(allComments.length - 4, 4);
-    } else {
-        allComments.splice(allComments.length - 3, 3);
-    }
-    //There are always three extra comment class elements at the end of the page, and a fourth if the "New Comments" box is there.
-    
+    afterCommentsElement = allComments[0];
+    afterCommentsElement = trimNonComments() || allComments[0];
     totalPages = Math.ceil(allComments.length / commentsPerPage);
     
     prepareAll();
@@ -124,6 +118,26 @@ function setup() {
     window.addEventListener("hashchange", hashChanged, false);
     
 };
+
+function trimNonComments() {
+    var n;
+    var last;
+    for (var i = 0; i < allComments.length; i++) {
+        if (allComments[i].childNodes) {
+            n = allComments[i].childNodes[allComments[i].childNodes.length - 1];
+            if (n && n.firstChild && n.firstChild.nodeValue == "posted by ") {
+                // This is a comment.
+                if (i < allComments.length - 1) {
+                    last = allComments[i + 1];
+                }
+                continue;
+            }
+        }
+        allComments.splice(i, 1);
+        i--;
+    }
+    return last;
+}
 
 function prepareAll() {
     var display;
@@ -170,16 +184,9 @@ var newCommentsChange = function(changes) {
                 if (allComments[0].id == controlsID) {
                     allComments.shift();
                 }
-                var trim;
-                if (allComments.length >= 5 && allComments[allComments.length - 5].id == "newcommentsmsg") {
-                    trim = showBottomControls? 5 : 4;
-                    allComments.splice(allComments.length - trim, trim);
-                } else {
-                    trim = showBottomControls? 4 : 3;
-                    allComments.splice(allComments.length - trim, trim);
-                }
-                // Page controls have the class "comments", so they need to be removed from the list too.
                 
+                trimNonComments();
+                                
                 totalPages = Math.ceil(allComments.length / commentsPerPage);
                 
                 prepareNewComments(previousComments);
@@ -373,7 +380,7 @@ function createControls(topCommentsElement) {
         topControls = new Controls(topCommentsElement);
     }
     if (showBottomControls) {
-        bottomControls = new Controls(prevNextThreadBox);
+        bottomControls = new Controls(afterCommentsElement);
     }
 }
 
