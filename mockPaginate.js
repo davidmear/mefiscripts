@@ -194,7 +194,7 @@ var newCommentsChange = function(changes) {
                     }
                 }
                 
-                if (previousComments <= commentsPerPage && !showSinglePageControls)
+                if (previousComments <= commentsPerPage && !showSinglePageControls) {
                     // Controls newly visible.
                     refreshFlow();
                 }
