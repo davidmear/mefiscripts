@@ -104,8 +104,10 @@ function setup() {
     }
     
     var topCommentsElement = allComments[0];
-    afterCommentsElement = allComments[0];
-    afterCommentsElement = trimNonComments() || allComments[0];
+    afterCommentsElement = trimNonComments();
+    if (!afterCommentsElement) {
+        afterCommentsElement = topCommentsElement;
+    }
     totalPages = Math.ceil(allComments.length / commentsPerPage);
     
     prepareAll();
