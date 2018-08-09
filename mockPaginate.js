@@ -50,6 +50,7 @@
         comma: ", ",
     }
 
+    var controlsStyle = "margin: 0 0 2em";
 
 
 //================================//
@@ -74,8 +75,6 @@ var postCommentCount;
 // Controls
 var topControls;
 var bottomControls;
-var controlsID = "paginationControls";
-
 
 //================================//
 //             Setup              //
@@ -189,9 +188,6 @@ var newCommentsChange = function(changes) {
                 }
                 
                 allComments = [].slice.call(document.getElementsByClassName("comments"));
-                if (allComments[0].id == controlsID) {
-                    allComments.shift();
-                }
                 
                 trimNonComments();
                                 
@@ -403,10 +399,10 @@ function updatePostCommentCount() {
 
 function createControls(topCommentsElement) {
     if (showTopControls) {
-        topControls = new Controls(topCommentsElement);
+        topControls = new Controls(topCommentsElement, "paginationControlsTop");
     }
     if (showBottomControls) {
-        bottomControls = new Controls(afterCommentsElement);
+        bottomControls = new Controls(afterCommentsElement, "paginationControlsBottom");
     }
 }
 
@@ -537,13 +533,12 @@ Controls.prototype.updateControls = function() {
     }
 }
 
-Controls.prototype.createControls = function(locationElement) {
+Controls.prototype.createControls = function(locationElement, id) {
     
     this.indexDiv = document.createElement("div");
     this.indexDiv.className = "comments";
-    this.indexDiv.id = controlsID;
-    this.indexDiv.style.marginTop = "0";
-    this.indexDiv.style.marginBottom = "2em";
+    this.indexDiv.id = id;
+    this.indexDiv.style.cssText = controlsStyle;
     this.indexSpan = document.createElement("span");
     this.indexSpan.className = "whitesmallcopy";
     this.indexSpan.style.fontSize = "11px";
