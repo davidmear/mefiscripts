@@ -50,7 +50,7 @@
         comma: ", ",
     }
 
-    var controlsStyle = "margin: 0 0 2em";
+    var controlsStyle = "margin-top: 0; margin-bottom: 2em;";
 
 
 //================================//
