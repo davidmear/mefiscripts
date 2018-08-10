@@ -483,7 +483,7 @@ Controls.prototype.updateControls = function() {
         
         // Reduce padding to enforce maxListedPages
         
-        var adjustedPad = Math.max(0, parseInt((maxListedPages - 3) / 2));
+        var adjustedPad = Math.min(condensedPad, Math.max(0, parseInt((maxListedPages - 3) / 2)));
         
         var lowPage = Math.min(currentPage - adjustedPad, totalPages - 1 - adjustedPad * 2);
         var highPage = Math.max(currentPage + adjustedPad, adjustedPad * 2);
