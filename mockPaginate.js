@@ -2,7 +2,7 @@
 // @name            Mock Paginate
 // @description     Adds the appearance of pages to threads by only showing one section of comments at a time.
 // @namespace       github.com/davidmear/mefiscripts
-// @version         0.8
+// @version         0.9
 // @include         https://metafilter.com/*
 // @include         https://*.metafilter.com/*
 // ==/UserScript==
@@ -122,8 +122,8 @@ function setup() {
 
 function trimNonComments() {
     var n;
-    var last;
-    
+    var last = -1;
+    var trimmedComments = [];
     // Special case for IRL;
     var irl = window.location.hostname == "irl.metafilter.com";
     var nodeCheck = irl? 2 : 1;
@@ -132,17 +132,30 @@ function trimNonComments() {
             n = allComments[i].childNodes[allComments[i].childNodes.length - nodeCheck];
             if (n && n.firstChild && n.firstChild.nodeValue == "posted by ") {
                 // This is a comment.
-                if (irl) {
-                    last = allComments[i].nextElementSibling.nextElementSibling;
-                } else if (i < allComments.length - 1) {
-                    last = allComments[i + 1];
-                }
-                continue;
+                trimmedComments.push(allComments[i]);
+                last = i;
             }
         }
-        allComments.splice(i, 1);
-        i--;
     }
+    try {
+        if (irl) {
+            if (last == -1) {
+                last = document.getElementsByName("commentpreview")[0].previousElementSibling;
+            } else {
+                last = allComments[last].nextElementSibling.nextElementSibling.nextElementSibling;
+            }
+        } else if (last < allComments.length - 2 && allComments[last + 1].id == "newcommentsmsg") {
+            last = allComments[last + 2];
+        } else if (last < allComments.length - 1) {
+            last = allComments[last + 1];
+        } else {
+            throw "Last comment found was " + last;
+        }
+    } catch (e) {
+        last = null;
+        console.log("Failed to find Next / Prev threads div. " + e);
+    }
+    allComments = trimmedComments;
     return last;
 }
 
