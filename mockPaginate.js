@@ -441,7 +441,7 @@ function bounceLastPage() {
 }
 
 
-function Controls(locationElement) {
+function Controls(locationElement, id) {
     this.indexDiv;
     this.indexSpan;
     this.prevLink;
@@ -456,7 +456,7 @@ function Controls(locationElement) {
     this.pageGrey;
     this.pageEllipses = [];
     
-    this.createControls(locationElement);
+    this.createControls(locationElement, id);
 }
 
 Controls.prototype.updateControls = function() {
