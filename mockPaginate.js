@@ -50,7 +50,7 @@
         comma: ", ",
     }
 
-    var controlsStyle = "margin-top: 0; margin-bottom: 2em;";
+    var controlsStyle = "font-size: 11px; width: 100%; margin: 0 0 2em;";
 
 
 //================================//
@@ -551,10 +551,10 @@ Controls.prototype.createControls = function(locationElement, id) {
     this.indexDiv = document.createElement("div");
     this.indexDiv.className = "comments";
     this.indexDiv.id = id;
-    this.indexDiv.style.cssText = controlsStyle;
+    this.indexDiv.style.marginTop = 0;
     this.indexSpan = document.createElement("span");
     this.indexSpan.className = "whitesmallcopy";
-    this.indexSpan.style.fontSize = "11px";
+    this.indexSpan.style.cssText = controlsStyle;
     
     this.prevLink = document.createElement("a");
     this.prevLink.appendChild(newInnerSpan(ui.prevButton));
