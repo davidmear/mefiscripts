@@ -50,7 +50,8 @@
         comma: ", ",
     }
 
-    var controlsStyle = "font-size: 11px; width: 100%; margin: 0 0 2em;";
+    var controlsStyle = "width: 100%; margin: 0 0 2em;";
+    var pageLinksStyle = "font-size: 100%; display: inline-block; position: relative; padding: 1px 3px; margin: -1px -3px;";
 
 
 //================================//
@@ -357,11 +358,11 @@ function hashChanged() {
         if (window.location.hash.substring(0, 2) == "#p") {
             // Custom page hash
             changePage(parseInt(window.location.hash.substring(2)) - 1, true);
+            // This is triggered by the user changing pages, but changePage() ignores it because newPage == currentPage
         } else if (window.location.hash.substring(0, 7) == "#inline") {
             // Metafilter link to the last newly added comment.
             // !!! Doesn't fire a hash changed event because it uses history.replaceState();
-            // Reset to the current page.
-            updateHash();
+            // Need to reset to the previous hash somehow.
         } else {
             // Check if it's a Metafilter comment link
             jumpToComment(window.location.hash.substring(1));
@@ -372,7 +373,7 @@ function hashChanged() {
         if (history.replaceState) {
             history.replaceState(null, null, window.location.href.split("#")[0] + "#" + pageHash());
         } else {
-            updateHas();
+            updateHash();
         }
     }
 }
@@ -568,19 +569,23 @@ Controls.prototype.createControls = function(locationElement, id) {
     this.indexSpan.style.cssText = controlsStyle;
     
     this.prevLink = document.createElement("a");
+    this.prevLink.style.cssText = pageLinksStyle;
     this.prevLink.appendChild(newInnerSpan(ui.prevButton));
     this.prevLink.onclick = function(){changePage(currentPage - 1, true)};
     this.prevLink.style.cursor = "pointer";
     this.prevGrey = newInnerSpan(ui.prevButton);
+    this.prevGrey.style.cssText = pageLinksStyle;
     
     this.indexSpan.appendChild(this.prevLink);
     this.indexDiv.appendChild(this.indexSpan);
     
     this.nextLink = document.createElement("a");
+    this.nextLink.style.cssText = pageLinksStyle;
     this.nextLink.appendChild(newInnerSpan(ui.nextButton));
     this.nextLink.onclick = function(){changePage(currentPage + 1, true)};
     this.nextLink.style.cursor = "pointer";
     this.nextGrey = newInnerSpan(ui.nextButton);
+    this.nextGrey.style.cssText = pageLinksStyle;
     
     this.indexSpan.appendChild(this.prevLink);
     this.indexSpan.appendChild(newInnerSpan(ui.separator));
@@ -592,6 +597,7 @@ Controls.prototype.createControls = function(locationElement, id) {
         this.createPageButton(i);
     }
     this.pageGrey = document.createElement("span");
+    this.pageGrey.style.cssText = pageLinksStyle;
     this.pageGrey.innerHTML = ui.currentL + "1" + ui.currentRight;
     
     this.pageEllipses = [];
@@ -625,6 +631,7 @@ Controls.prototype.createNewPageControls = function() {
 
 Controls.prototype.createPageButton = function(i) {
     this.pageLinks[i] = document.createElement("a");
+    this.pageLinks[i].style.cssText = pageLinksStyle;
     var pageButtonText = document.createElement("span");
     pageButtonText.innerHTML = ui.pageL + (i + 1) + ui.pageR;
     this.pageLinks[i].appendChild(pageButtonText);
