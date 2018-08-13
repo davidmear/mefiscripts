@@ -344,8 +344,12 @@ function updateHash() {
     if (linkedCommentOnPage) {
         window.location.hash = linkedComment;
     } else {
-        window.location.hash = "p" + (currentPage + 1);
+        window.location.hash = pageHash();
     }
+}
+
+function pageHash() {
+    return "p" + (currentPage + 1);
 }
 
 function hashChanged() {
@@ -362,6 +366,13 @@ function hashChanged() {
             // Check if it's a Metafilter comment link
             jumpToComment(window.location.hash.substring(1));
             checkForLinkedComment();
+        }
+    } else {
+        changePage(0, false);
+        if (history.replaceState) {
+            history.replaceState(null, null, window.location.href.split("#")[0] + "#" + pageHash());
+        } else {
+            updateHas();
         }
     }
 }
