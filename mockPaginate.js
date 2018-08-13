@@ -63,6 +63,7 @@ var currentPage = 0;
 var totalPages;
 var linkedCommentOnPage;
 var linkedComment;
+var storedHash = "";
 
 // References
 var allComments;
@@ -224,6 +225,10 @@ var newCommentsChange = function(changes) {
                     refreshFlow();
                 }
                 
+                if (window.location.hash.substring(0, 7) == "#inline") {
+                    restoreHash();
+                }
+                
                 return;
             } else {
                 return;
@@ -359,10 +364,6 @@ function hashChanged() {
             // Custom page hash
             changePage(parseInt(window.location.hash.substring(2)) - 1, true);
             // This is triggered by the user changing pages, but changePage() ignores it because newPage == currentPage
-        } else if (window.location.hash.substring(0, 7) == "#inline") {
-            // Metafilter link to the last newly added comment.
-            // !!! Doesn't fire a hash changed event because it uses history.replaceState();
-            // Need to reset to the previous hash somehow.
         } else {
             // Check if it's a Metafilter comment link
             jumpToComment(window.location.hash.substring(1));
@@ -375,6 +376,15 @@ function hashChanged() {
         } else {
             updateHash();
         }
+    }
+    storedHash = window.location.hash.substring(1);
+}
+
+function restoreHash() {
+    if (history.replaceState) {
+        history.replaceState(null, null, window.location.href.split("#")[0] + "#" + storedHash);
+    } else {
+        window.location.hash = storedHash;
     }
 }
 
