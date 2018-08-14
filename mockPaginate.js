@@ -313,7 +313,10 @@ function changePage(newPage, changeHash) {
           updateHash();
         }
         
+        return true;
+        
     }
+    return false;
 }
 
 function checkForLinkedComment() {
@@ -344,7 +347,9 @@ function jumpToComment(commentAnchor) {
     for (var i = 0; i < allComments.length; i++) {
         if (commentAnchors[i] == commentAnchor) {
             linkedComment = commentAnchors[i];
-            changePage(Math.floor(i / commentsPerPage), false);
+            if (!changePage(Math.floor(i / commentsPerPage), false)) {
+                refreshFlow();
+            }
             allComments[i].previousElementSibling.scrollIntoView(true);
         }
     }
