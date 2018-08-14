@@ -50,8 +50,12 @@
         comma: ", ",
     }
 
+//  CSS for the page list boxes.
     var controlsStyle = "width: 100%; margin: 0 0 2em;";
+
+//  CSS for each individual page link, as well as the Prev and Next buttons.
     var pageLinksStyle = "font-size: 100%; display: inline-block; position: relative; padding: 1px 3px; margin: -1px -3px;";
+
 
 
 //================================//
