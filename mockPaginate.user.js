@@ -134,7 +134,7 @@ function trimNonComments() {
     var irl = window.location.hostname == "irl.metafilter.com";
     var nodeCheck = irl? 2 : 1;
     for (var i = 0; i < allComments.length; i++) {
-        if (allComments[i].childNodes) {
+        if (allComments[i].id != "prevDiv" && allComments[i].id != "prevDiv2" && allComments[i].childNodes) {
             n = allComments[i].childNodes[allComments[i].childNodes.length - nodeCheck];
             if (n && n.firstChild && n.firstChild.nodeValue == "posted by ") {
                 // This is a comment.
