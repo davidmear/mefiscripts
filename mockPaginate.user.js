@@ -2,7 +2,7 @@
 // @name            Mock Paginate
 // @description     Adds the appearance of pages to threads by only showing one section of comments at a time.
 // @namespace       github.com/davidmear/mefiscripts
-// @version         0.9
+// @version         1.0
 // @include         https://metafilter.com/*
 // @include         https://*.metafilter.com/*
 // ==/UserScript==
@@ -55,6 +55,9 @@
 
 //  CSS for each individual page link, as well as the Prev and Next buttons.
     var pageLinksStyle = "font-size: 100%; display: inline-block; position: relative; padding: 1px 3px; margin: -1px -3px;";
+
+//  CSS for other text elements.
+    var textStyle = "font-size: 100%;";
 
 
 
@@ -589,27 +592,25 @@ Controls.prototype.createControls = function(locationElement, id) {
     
     this.prevLink = document.createElement("a");
     this.prevLink.style.cssText = pageLinksStyle;
-    this.prevLink.appendChild(newInnerSpan(ui.prevButton));
+    this.prevLink.appendChild(newInnerSpan(ui.prevButton, ""));
     this.prevLink.onclick = function(){changePage(currentPage - 1, true)};
     this.prevLink.style.cursor = "pointer";
-    this.prevGrey = newInnerSpan(ui.prevButton);
+    this.prevGrey = newInnerSpan(ui.prevButton, "");
     this.prevGrey.style.cssText = pageLinksStyle;
     
     this.indexSpan.appendChild(this.prevLink);
-    this.indexDiv.appendChild(this.indexSpan);
     
     this.nextLink = document.createElement("a");
     this.nextLink.style.cssText = pageLinksStyle;
-    this.nextLink.appendChild(newInnerSpan(ui.nextButton));
+    this.nextLink.appendChild(newInnerSpan(ui.nextButton, ""));
     this.nextLink.onclick = function(){changePage(currentPage + 1, true)};
     this.nextLink.style.cursor = "pointer";
-    this.nextGrey = newInnerSpan(ui.nextButton);
+    this.nextGrey = newInnerSpan(ui.nextButton, "");
     this.nextGrey.style.cssText = pageLinksStyle;
     
-    this.indexSpan.appendChild(this.prevLink);
-    this.indexSpan.appendChild(newInnerSpan(ui.separator));
+    this.indexSpan.appendChild(newInnerSpan(ui.separator, textStyle));
     
-    this.pageLinksEnd = newInnerSpan(ui.separator);
+    this.pageLinksEnd = newInnerSpan(ui.separator, textStyle);
     this.indexSpan.appendChild(this.pageLinksEnd);
     
     for (var i = 0; i < totalPages; i++) {
@@ -620,8 +621,8 @@ Controls.prototype.createControls = function(locationElement, id) {
     this.pageGrey.innerHTML = ui.currentL + "1" + ui.currentRight;
     
     this.pageEllipses = [];
-    this.pageEllipses[0] = newInnerSpan(ui.ellipses);
-    this.pageEllipses[1] = newInnerSpan(ui.ellipses);
+    this.pageEllipses[0] = newInnerSpan(ui.ellipses, textStyle);
+    this.pageEllipses[1] = newInnerSpan(ui.ellipses, textStyle);
     
     this.indexSpan.appendChild(this.nextLink);
     
@@ -639,6 +640,7 @@ Controls.prototype.createNewPageControls = function() {
     var i = this.pageLinks.length;
     if (this.pageLinks.length > 0 && this.pageLinks.length < totalPages) {
         this.pageCommas[i - 1] = document.createElement("span");
+        this.pageCommas[i - 1].style.cssText = textStyle;
         this.pageCommas[i - 1].innerHTML = ui.comma;
         this.indexSpan.insertBefore(this.pageCommas[i - 1], this.pageLinksEnd);
     }
@@ -659,6 +661,7 @@ Controls.prototype.createPageButton = function(i) {
     this.indexSpan.insertBefore(this.pageLinks[i], this.pageLinksEnd);
     if (i < totalPages - 1) {
         this.pageCommas[i] = document.createElement("span");
+        this.pageCommas[i].style.cssText = textStyle;
         this.pageCommas[i].innerHTML = ui.comma;
         this.indexSpan.insertBefore(this.pageCommas[i], this.pageLinksEnd);
     }
@@ -672,8 +675,9 @@ Controls.prototype.createPageFunction = function(i) {
 //        Helper Functions        //
 //================================//
 
-function newInnerSpan(innerHTML) {
+function newInnerSpan(innerHTML, css) {
     var innerSpan = document.createElement("span");
+    innerSpan.style.cssText = css;
     innerSpan.innerHTML = innerHTML;
     return innerSpan;
 }
