@@ -586,6 +586,7 @@ Controls.prototype.createControls = function(locationElement, id) {
     this.indexDiv.className = "comments";
     this.indexDiv.id = id;
     this.indexDiv.style.marginTop = 0;
+    this.indexDiv.style.zIndex = 9999;
     this.indexSpan = document.createElement("span");
     this.indexSpan.className = "whitesmallcopy";
     this.indexSpan.style.cssText = controlsStyle;
